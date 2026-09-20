@@ -99,9 +99,9 @@ describe("storefront branding pass", () => {
     assert.doesNotMatch(read("components/layout/Header.tsx"), /TopUtilityBar/);
   });
 
-  it("configures favicon metadata and #8f1eae brand token", () => {
+  it("configures favicon metadata and #27386d brand token", () => {
     assert.match(read("app/layout.tsx"), /favicon-96x96\.png/);
-    assert.match(read("app/globals.css"), /--color-brand-600:\s*#8f1eae/);
+    assert.match(read("app/globals.css"), /--color-brand-600:\s*#27386d/);
   });
 
   it("renders the storefront logo from public/Logo.png without optimizer cache", () => {
