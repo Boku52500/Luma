@@ -1,6 +1,6 @@
 # Product image storage (Cloudflare R2)
 
-Pika stores **image binaries in Cloudflare R2** and **metadata in PostgreSQL** (`ProductImage.url`, `ProductImage.objectKey`, alt translations).
+Luma stores **image binaries in Cloudflare R2** and **metadata in PostgreSQL** (`ProductImage.url`, `ProductImage.objectKey`, alt translations).
 
 Uploads are **server-mediated**: the admin browser posts the file to a Server Action, the server validates and converts it with `sharp`, then writes to R2. Presigned browser-to-R2 uploads are not used. Secrets never leave the server.
 
@@ -13,7 +13,7 @@ Copy `.env.example` into `.env` and fill these when you have a bucket:
 | `R2_ACCOUNT_ID` | Cloudflare account ID |
 | `R2_ACCESS_KEY_ID` | R2 API token access key |
 | `R2_SECRET_ACCESS_KEY` | R2 API token secret |
-| `R2_BUCKET_NAME` | Bucket name (e.g. `pika-product-images`) |
+| `R2_BUCKET_NAME` | Bucket name (e.g. `luma-product-images`) |
 | `R2_PUBLIC_URL` | Public origin **without** a trailing slash, used to build stored URLs |
 
 Do not commit real values. `.env` is gitignored.
@@ -23,7 +23,7 @@ If any of these are missing, the storefront still serves existing `mock:` and ex
 ## Cloudflare setup
 
 1. [Cloudflare dashboard](https://dash.cloudflare.com/) → **R2** → create a bucket.
-2. Enable **public access** for that bucket, **or** attach a custom domain (later `images.pika.ge`).
+2. Enable **public access** for that bucket, **or** attach a custom domain (later `images.luma.ge`).
 3. Copy the public URL into `R2_PUBLIC_URL` (R2.dev subdomain or your custom domain).
 4. **Manage R2 API Tokens** → create a token with **Object Read & Write** limited to this bucket.
 5. Put the token’s Access Key ID, Secret Access Key, and your account ID into `.env`.
@@ -58,8 +58,8 @@ You can run the shop without R2. Seeded products keep `mock://` illustration URL
 
 ## Production
 
-Use a dedicated bucket, rotate API tokens, and point `R2_PUBLIC_URL` at a stable public origin so stored URLs do not need rewriting when you move from `*.r2.dev` to `images.pika.ge`.
+Use a dedicated bucket, rotate API tokens, and point `R2_PUBLIC_URL` at a stable public origin so stored URLs do not need rewriting when you move from `*.r2.dev` to `images.luma.ge`.
 
-When the custom domain is ready in Cloudflare (CNAME to the R2 bucket), set `R2_PUBLIC_URL=https://images.pika.ge` and redeploy. Existing rows still contain the URL that was stored at upload time — new uploads use the new origin. Do not attach object-expiration lifecycle rules to product images.
+When the custom domain is ready in Cloudflare (CNAME to the R2 bucket), set `R2_PUBLIC_URL=https://images.luma.ge` and redeploy. Existing rows still contain the URL that was stored at upload time — new uploads use the new origin. Do not attach object-expiration lifecycle rules to product images.
 
 See `docs/deployment.md` for the rest of the production checklist.

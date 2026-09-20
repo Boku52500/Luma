@@ -198,7 +198,7 @@ export function auditAiManifest(entries: AiSeoManifestEntry[], retriedSkus: stri
   }
   for (const entry of okEntries) {
     const last = entry.aiFullDescription.split(/(?<=[.!?])\s+/).pop()?.trim() ?? "";
-    if (last.length >= 20 && /(?:ფას|შეიძინ|იყიდ|განვად|Pika)/i.test(last)) {
+    if (last.length >= 20 && /(?:ფას|შეიძინ|იყიდ|განვად|Luma)/i.test(last)) {
       const key = last.toLowerCase();
       const existing = sentenceCounts.get(key);
       if (existing) {

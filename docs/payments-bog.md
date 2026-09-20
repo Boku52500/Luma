@@ -1,6 +1,6 @@
 # Bank of Georgia card payments
 
-Pika keeps merchant orders (`PIKA-…`) separate from BOG payment attempts. A Pika `Order` is created first; each card checkout or retry creates a `Payment` row and then a BOG ecommerce order. Redirect pages are UX only. Authoritative status comes from the signed callback and/or `GET /payments/v1/receipt/:order_id`.
+Luma keeps merchant orders (`LUMA-…`) separate from BOG payment attempts. A Luma `Order` is created first; each card checkout or retry creates a `Payment` row and then a BOG ecommerce order. Redirect pages are UX only. Authoritative status comes from the signed callback and/or `GET /payments/v1/receipt/:order_id`.
 
 Official docs: [Introduction](https://api.bog.ge/docs/en/payments/introduction), [Authentication](https://api.bog.ge/docs/en/payments/authentication), [Create order](https://api.bog.ge/docs/en/payments/standard-process/create-order), [Payment details](https://api.bog.ge/docs/en/payments/standard-process/get-payment-details), [Callback](https://api.bog.ge/docs/en/payments/standard-process/callback), [Refund](https://api.bog.ge/docs/en/payments/refund), [Response codes](https://api.bog.ge/docs/en/payments/response-codes).
 
@@ -42,9 +42,9 @@ If credentials are missing, the shop still runs. Choosing card payment returns a
 
 ## Create order
 
-Bearer auth, `Accept-Language: ka`, `Idempotency-Key` UUID v4, `payment_method: ["card"]` plus flagged hosted methods (`google_pay`, `apple_pay`, `bog_p2p`, `bog_loyalty`), no `config.google_pay` / `config.apple_pay` on Card checkout, `capture: automatic`, `purchase_units.currency: GEL`, server-calculated `total_amount` and basket. `external_order_id` is the Pika order number.
+Bearer auth, `Accept-Language: ka`, `Idempotency-Key` UUID v4, `payment_method: ["card"]` plus flagged hosted methods (`google_pay`, `apple_pay`, `bog_p2p`, `bog_loyalty`), no `config.google_pay` / `config.apple_pay` on Card checkout, `capture: automatic`, `purchase_units.currency: GEL`, server-calculated `total_amount` and basket. `external_order_id` is the Luma order number.
 
-Retries of the **same** attempt reuse the stored idempotency key. A new retry after failure creates a new `Payment` and a new key. The Pika order is not duplicated.
+Retries of the **same** attempt reuse the stored idempotency key. A new retry after failure creates a new `Payment` and a new key. The Luma order is not duplicated.
 
 ## Callback
 
@@ -52,7 +52,7 @@ Retries of the **same** attempt reuse the stored idempotency key. A new retry af
 
 ## Status mapping
 
-| BOG `order_status.key` | Pika attempt | Order `paymentStatus` |
+| BOG `order_status.key` | Luma attempt | Order `paymentStatus` |
 | --- | --- | --- |
 | `created` | `pending` | `pending` |
 | `processing` | `processing` | `processing` |
@@ -66,7 +66,7 @@ Paid attempts are not overwritten by a later `rejected`. Order fulfillment statu
 
 ## Reconciliation
 
-`reconcileBogPaymentDetails` is shared by the callback, the customer return pages, and admin **გადახდის სტატუსის განახლება**. It checks provider order id, Pika order number, currency, and amounts (tetri). Admins cannot toggle a BOG payment to paid or refunded by hand.
+`reconcileBogPaymentDetails` is shared by the callback, the customer return pages, and admin **გადახდის სტატუსის განახლება**. It checks provider order id, Luma order number, currency, and amounts (tetri). Admins cannot toggle a BOG payment to paid or refunded by hand.
 
 The first transition into `paid` / `partially_refunded` / `refunded` also schedules the matching customer email. Duplicate callbacks do not resend. See `docs/email.md`.
 
@@ -84,8 +84,8 @@ Use the existing **გადახდის სტატუსის გან�
 
 ## Customer URLs
 
-- Success: `/checkout/payment/success?order=PIKA-…`
-- Fail: `/checkout/payment/fail?order=PIKA-…`
+- Success: `/checkout/payment/success?order=LUMA-…`
+- Fail: `/checkout/payment/fail?order=LUMA-…`
 - Existing `/checkout/success` remains for cash / installment
 
 Landing on success does **not** mark the order paid.
@@ -99,14 +99,14 @@ Landing on success does **not** mark the order paid.
 
 ## Live QA checklist (needs real BOG credentials + public HTTPS)
 
-1. Create a Pika order with card payment.
+1. Create a Luma order with card payment.
 2. Confirm a `Payment` row and BOG id / redirect URL are stored.
 3. Complete payment on BOG’s page.
 4. Callback verifies and status becomes `paid`.
-5. Pika order number is unchanged.
+5. Luma order number is unchanged.
 6. Success page, account order, and admin show paid + transaction data.
 7. Duplicate callback does not duplicate effects.
-8. Failed/unpaid retry starts a new attempt on the same Pika order.
+8. Failed/unpaid retry starts a new attempt on the same Luma order.
 9. Cart clears after confirmed `paid`, not after redirect creation.
 
 ## Local tests

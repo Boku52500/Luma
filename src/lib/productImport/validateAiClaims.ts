@@ -28,7 +28,7 @@ const GEORGIAN_SCRIPT = /[\u10A0-\u10FF]/;
 /** Latin ASCII letters only — not Georgian homoglyphs such as ე (U+10D4) or ი (U+10D8). */
 const LATIN_ASCII = /[A-Za-z]/;
 
-/** Brand/model Latin prefix + hyphen + Georgian suffix only (e.g. Pika-ში, iPhone-ის, SSD-ით, R9-9900X3D-ის). */
+/** Brand/model Latin prefix + hyphen + Georgian suffix only (e.g. Luma-ში, iPhone-ის, SSD-ით, R9-9900X3D-ის). */
 const VALID_LATIN_GEORGIAN_HYBRID = /^[A-Za-z0-9][A-Za-z0-9.+\/-]*-[\u10A0-\u10FF]+$/;
 
 function stripTokenOuterPunctuation(token: string): string {
@@ -80,7 +80,7 @@ export const COMMERCIAL_KEYWORD_COUNT_LABELS: Array<{ label: string; pattern: Re
   { label: "შეიძინე", pattern: /შეიძინ(?:ე|ოთ)?/gi },
   { label: "იყიდე", pattern: /იყიდ(?:ე|ოთ)?/gi },
   { label: "ყიდვა", pattern: /ყიდვ(?:ა|ის|ით)?/gi },
-  { label: "Pika", pattern: /Pika/gi },
+  { label: "Luma", pattern: /Luma/gi },
 ];
 
 function sourceCorpus(facts: ProductFacts): string {
@@ -213,7 +213,7 @@ export function countCommercialKeywords(texts: string[]): Record<string, number>
 
 function normalizeCommercialStructure(sentence: string): string {
   return sentence
-    .replace(/Pika-?(?:ში|ს)?/gi, "PIKA")
+    .replace(/Luma-?(?:ში|ს)?/gi, "LUMA")
     .replace(/\b[\w.-]+\b/g, (word) => (/[\u10a0-\u10ff]/.test(word) ? word : "X"))
     .replace(/\s+/g, " ")
     .trim()
@@ -235,7 +235,7 @@ export function analyzeCommercialRepetition(
     const sentences = [
       ...entry.seoDescription.split(/(?<=[.!?])\s+/),
       ...entry.fullDescription.split(/(?<=[.!?])\s+/),
-    ].filter((s) => /(?:ფას|შეიძინ|იყიდ|განვად|Pika)/i.test(s));
+    ].filter((s) => /(?:ფას|შეიძინ|იყიდ|განვად|Luma)/i.test(s));
 
     for (const sentence of sentences) {
       const trimmed = sentence.trim();

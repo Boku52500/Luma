@@ -29,7 +29,7 @@ import { MAX_CART_LINES } from "@/lib/cart";
 
 export type { CartLineItem } from "@/lib/productSnapshots";
 
-const STORAGE_KEY = "pika:cart";
+const STORAGE_KEY = "luma:cart";
 const MAX_QUANTITY = 99;
 const listeners = new Set<() => void>();
 

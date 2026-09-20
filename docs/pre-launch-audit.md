@@ -1,7 +1,7 @@
-# Pika pre-launch audit
+# Luma pre-launch audit
 
 Date: 28 August 2026  
-Canonical origin: `https://pika.ge`  
+Canonical origin: `https://luma.ge`  
 Scope: existing production storefront — audit + targeted fixes, not a redesign.  
 No production database operations, seeds, real BOG payments, or real refunds were performed.
 
@@ -45,7 +45,7 @@ None remaining. H-01, H-02, and H-03 were implemented (see PASSED).
 - **Fix performed or recommendation:** report only. Nonce-based CSP is a separate hardening project.
 - **Verification performed:** read `contentSecurityPolicy()` in `next.config.ts`.
 
-### M-04 — Guest order access depends on `pika_order_confirm` cookie
+### M-04 — Guest order access depends on `luma_order_confirm` cookie
 
 - **Problem:** payment-success / order confirmation for guests requires that cookie. Another device or a cleared cookie cannot open the order (by design).
 - **Affected area:** checkout success, payment return, `customerCanAccessOrder`.
@@ -69,7 +69,7 @@ None remaining. H-01, H-02, and H-03 were implemented (see PASSED).
 - **Fix performed or recommendation:** optional later: check role in proxy if a cheap cached signal exists. Do not put role in the JWT as the only check.
 - **Verification performed:** read `proxy.ts` and `src/server/auth/admin.ts`.
 
-### M-07 — Client cart still uses snapshot prices and mock `PIKA10`
+### M-07 — Client cart still uses snapshot prices and mock `LUMA10`
 
 - **Problem:** mini-cart/checkout UI can show localStorage prices and `evaluatePromoCode` mock. Server checkout ignores client money and loads catalogue + `Promotion` rows.
 - **Affected area:** cart UI vs `createOrder`.
@@ -212,7 +212,7 @@ Migration added: `prisma/migrations/20260828120000_inventory_promo_checkout_idem
 1. **Legal/ops copy:** replace `needsAdminReview` pages in `src/lib/infoPages.ts` (and homepage TrustSection if those claims are not approved).
 2. **Social URLs:** add official profile links when they exist.
 3. **Migrations:** on production Neon run `npm run db:migrate:deploy` (EmailDelivery if still pending, plus inventory/promo/checkout-idempotency). Do not seed.
-4. Confirm `APP_ORIGIN=https://pika.ge` and `AUTH_URL=https://pika.ge` so canonical, sitemap, Auth.js, and www redirects stay consistent.
+4. Confirm `APP_ORIGIN=https://luma.ge` and `AUTH_URL=https://luma.ge` so canonical, sitemap, Auth.js, and www redirects stay consistent.
 5. Confirm production `RATE_LIMIT_STORE` is PostgreSQL (default when `NODE_ENV=production`).
 6. Existing in-flight card orders remain `inventoryState=committed` after migrate (no retroactive stock restore). New card orders use holds.
 7. Do not set `ALLOW_PRODUCTION_SEED`.

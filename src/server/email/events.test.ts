@@ -79,7 +79,7 @@ describe("shouldSendOrderStatusEmail", () => {
 describe("orderEmailRecipient", () => {
   it("uses the order snapshot email for guests and logged-in customers", () => {
     assert.equal(orderEmailRecipient({ customerEmail: "guest@example.com" }), "guest@example.com");
-    assert.equal(orderEmailRecipient({ customerEmail: "  Buyer@Pika.ge " }), "Buyer@Pika.ge");
+    assert.equal(orderEmailRecipient({ customerEmail: "  Buyer@Luma.ge " }), "Buyer@Luma.ge");
     assert.equal(orderEmailRecipient({ customerEmail: null }), null);
     assert.equal(orderEmailRecipient({ customerEmail: "not-an-email" }), null);
   });

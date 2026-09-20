@@ -68,7 +68,7 @@ export type CheckoutFinancingReuseDecision = {
 };
 
 /**
- * Checkout-key replay should keep the Pika merchant Order. The Payment row
+ * Checkout-key replay should keep the Luma merchant Order. The Payment row
  * and BOG provider order are reused only when the latest unpaid attempt is
  * compatible with the new selection.
  */

@@ -1,4 +1,4 @@
-# Pika admin
+# Luma admin
 
 Staff operate the catalogue, orders, and promotions at `/admin`. This is not a public registration flow.
 

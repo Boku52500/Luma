@@ -6,12 +6,12 @@ Header products **Payment Manager**, **Link Payment**, **Billing**, and **Open B
 
 Classification (after implementation):
 
-- `IMPLEMENTED + TESTED` — in Pika, covered by mocked tests
+- `IMPLEMENTED + TESTED` — in Luma, covered by mocked tests
 - `IMPLEMENTED + REQUIRES BOG ACTIVATION` — coded, default-off until Business Manager / support enables it
 - `IMPLEMENTED + REQUIRES APPLE/GOOGLE ACTIVATION` — coded, default-off until Apple/Google + BOG merchant setup
-- `NOT APPLICABLE TO PIKA` — documented reason
+- `NOT APPLICABLE TO LUMA` — documented reason
 
-Pika architecture (unchanged): `Order` is the merchant order; `Payment` is one financial attempt. Redirects, wallet sheets, and frontend tokens never mark `PAID`. Authoritative path is signed callback and/or Payment Details → validate → DB transaction → financial state → inventory/promo → email.
+Luma architecture (unchanged): `Order` is the merchant order; `Payment` is one financial attempt. Redirects, wallet sheets, and frontend tokens never mark `PAID`. Authoritative path is signed callback and/or Payment Details → validate → DB transaction → financial state → inventory/promo → email.
 
 ---
 
@@ -29,11 +29,11 @@ Pika architecture (unchanged): `Order` is the merchant order; `Payment` is one f
 | payment_method | — |
 | Callback / reconciliation | Callbacks are asynchronous; API calls are synchronous |
 | Merchant activation | Business registration |
-| Current Pika status | Followed by existing card integration |
+| Current Luma status | Followed by existing card integration |
 | Implementation | `docs/payments-bog.md`, this matrix |
 | DB / checkout / admin | N/A |
 | Production test status | N/A |
-| **Classification** | **NOT APPLICABLE TO PIKA** — conceptual overview only; no API to implement |
+| **Classification** | **NOT APPLICABLE TO LUMA** — conceptual overview only; no API to implement |
 
 ---
 
@@ -51,7 +51,7 @@ Pika architecture (unchanged): `Order` is the merchant order; `Payment` is one f
 | payment_method | — |
 | Callback / reconciliation | — |
 | Merchant activation | `client_id` / `client_secret` issued after business registration |
-| Current Pika status | Production-tested |
+| Current Luma status | Production-tested |
 | Implementation | `src/server/payments/bog/auth.ts`, `config.ts` |
 | DB | Tokens are process-memory only |
 | Checkout / admin | Hidden; missing creds return Georgian config error |
@@ -66,7 +66,7 @@ Pika architecture (unchanged): `Order` is the merchant order; `Payment` is one f
 | --- | --- |
 | Documentation | https://api.bog.ge/docs/en/payments/standard-process/ |
 | Official endpoint(s) | Index of Order Request, Payment Details, Callback |
-| **Classification** | **NOT APPLICABLE TO PIKA** — navigation index; covered by child pages |
+| **Classification** | **NOT APPLICABLE TO LUMA** — navigation index; covered by child pages |
 
 ---
 
@@ -84,17 +84,17 @@ Pika architecture (unchanged): `Order` is the merchant order; `Payment` is one f
 | payment_method | `card`, `google_pay`, `apple_pay`, `bog_p2p`, `bog_loyalty`, `bnpl`, `bog_loan`, `gift_card` |
 | Callback / reconciliation | `callback_url` required HTTPS; customer redirect is not final |
 | Merchant activation | Each listed `payment_method` must be activated for the shop |
-| Current Pika status | Card checkout: `capture: automatic` + `payment_method: ["card"]` plus flagged hosted methods (`google_pay`, `apple_pay`, `bog_p2p`, `bog_loyalty`). No `config.*.external`. Loan/BNPL are separate checkout options |
+| Current Luma status | Card checkout: `capture: automatic` + `payment_method: ["card"]` plus flagged hosted methods (`google_pay`, `apple_pay`, `bog_p2p`, `bog_loyalty`). No `config.*.external`. Loan/BNPL are separate checkout options |
 | Implementation | `src/server/payments/bog/payload.ts`, `client.ts`, `initiate.ts` |
 | DB | `Payment` attempt + `Order.checkoutIdempotencyKey` |
-| Checkout UI | Card always (when BOG configured). Pika does not draw wallet / P2P / loyalty buttons. Those appear on BOG's hosted page when flagged |
+| Checkout UI | Card always (when BOG configured). Luma does not draw wallet / P2P / loyalty buttons. Those appear on BOG's hosted page when flagged |
 | Admin UI | Payment attempt list |
 | Production test status | Card: live. Other create-order configs: mocked tests only |
 | **Classification** | **IMPLEMENTED + TESTED** (card automatic). Hosted extras: **IMPLEMENTED + REQUIRES BOG ACTIVATION** |
 
 ### 4a. Hosted `bog_p2p` / `bog_loyalty` / `gift_card`
 
-These values exist only on the Order Request `payment_method` list (no dedicated sidebar page). Pika can include them on the BOG-hosted page when the matching env flag is on. No Pika-native UI. Default off.
+These values exist only on the Order Request `payment_method` list (no dedicated sidebar page). Luma can include them on the BOG-hosted page when the matching env flag is on. No Luma-native UI. Default off.
 
 **Classification:** **IMPLEMENTED + REQUIRES BOG ACTIVATION**
 
@@ -114,7 +114,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | `payment_detail.transfer_method.key` |
 | Callback / reconciliation | Used when callback was missed; same parser as callback `body` |
 | Merchant activation | — |
-| Current Pika status | Parser accepts real payloads; extended for saved-card / split / preauth fields |
+| Current Luma status | Parser accepts real payloads; extended for saved-card / split / preauth fields |
 | Implementation | `src/server/payments/bog/schemas.ts`, `client.ts`, `reconcile.ts`, `match.ts` |
 | DB | Payment + refund + saved-method + split snapshot fields |
 | Checkout / admin | Success/fail pages and admin refresh |
@@ -133,11 +133,11 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | Authentication | `Callback-Signature` SHA256withRSA over **raw body** before JSON parse |
 | Important request fields | Header `Callback-Signature`; body `event=order_payment`, `zoned_request_time`, `body` = payment details. Also used for refunds, preauth approvals, and split updates |
 | Important response fields | Merchant must return HTTP 200 |
-| Idempotency-Key | Pika idempotent reconcile; not a BOG request header |
+| Idempotency-Key | Luma idempotent reconcile; not a BOG request header |
 | payment_method | Inside `body.payment_detail` |
 | Callback / reconciliation | Authoritative with Payment Details fallback |
 | Merchant activation | Public HTTPS `callback_url` |
-| Current Pika status | Production-tested signed callback |
+| Current Luma status | Production-tested signed callback |
 | Implementation | `src/app/api/payments/bog/callback/route.ts`, `src/server/payments/bog/signature.ts` |
 | DB | Same reconcile path |
 | Checkout UI | Must not mark paid |
@@ -152,7 +152,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | Field | Value |
 | --- | --- |
 | Documentation | https://api.bog.ge/docs/en/payments/saved-card/ |
-| **Classification** | **NOT APPLICABLE TO PIKA** — navigation index; covered by child pages |
+| **Classification** | **NOT APPLICABLE TO LUMA** — navigation index; covered by child pages |
 
 ---
 
@@ -168,9 +168,9 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | Important response fields | HTTP 202 Accepted |
 | Idempotency-Key | Optional UUID v4 |
 | payment_method | Card payment on the parent order. Details `saved_card_type=recurrent`, `payment_option=recurrent` on later charges |
-| Callback / reconciliation | Parent order still reconciles as a normal payment; Pika stores the BOG `order_id` as the saved-card reference after successful paid parent |
+| Callback / reconciliation | Parent order still reconciles as a normal payment; Luma stores the BOG `order_id` as the saved-card reference after successful paid parent |
 | Merchant activation | Saved-card product in Business Manager |
-| Current Pika status | Implemented, default-off |
+| Current Luma status | Implemented, default-off |
 | Implementation | `src/server/payments/bog/savedCard.ts`, Account → Payment Methods, checkout consent |
 | DB | `SavedPaymentMethod` (`consent=recurrent`, `parentOrderId`) |
 | Checkout UI | Authenticated customers only; checkbox does **not** grant automatic-charge consent |
@@ -194,7 +194,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | Later charges: `payment_option=subscription`, `saved_card_type=subscription` |
 | Callback / reconciliation | Same payment-details path |
 | Merchant activation | Automatic-payment permission from BOG |
-| Current Pika status | Provider API implemented. **Business workflow disabled** (no checkout/admin trigger) unless `BOG_AUTOMATIC_CHARGE_WORKFLOW_ENABLED=true` |
+| Current Luma status | Provider API implemented. **Business workflow disabled** (no checkout/admin trigger) unless `BOG_AUTOMATIC_CHARGE_WORKFLOW_ENABLED=true` |
 | Implementation | `src/server/payments/bog/savedCard.ts` |
 | DB | `SavedPaymentMethod.consent=subscription` |
 | Checkout UI | Automatic-charge consent is not offered |
@@ -218,7 +218,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | — |
 | Callback / reconciliation | Local row soft-deleted; BOG 202 is request accepted |
 | Merchant activation | Saved-card product |
-| Current Pika status | Implemented; customer may delete only own methods |
+| Current Luma status | Implemented; customer may delete only own methods |
 | Implementation | `src/server/payments/bog/savedCard.ts`, account actions |
 | DB | `SavedPaymentMethod.deletedAt` |
 | Checkout / admin | Account → Payment Methods |
@@ -241,7 +241,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | Inherited from order request body; details `payment_option=recurrent` |
 | Callback / reconciliation | Same signed callback + Payment Details |
 | Merchant activation | Saved-card product |
-| Current Pika status | Implemented for authenticated owners of a recurrent method |
+| Current Luma status | Implemented for authenticated owners of a recurrent method |
 | Implementation | `src/server/payments/initiate.ts`, `client.ts` |
 | DB | `Payment.parentProviderOrderId`, `savedPaymentMethodId` |
 | Checkout UI | Shown only when customer has an active recurrent card and capability is on |
@@ -265,7 +265,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | `payment_option=subscription` |
 | Callback / reconciliation | Callback + Payment Details; never mark paid from the 202/create response alone |
 | Merchant activation | Automatic-payment permission |
-| Current Pika status | Provider function implemented and tested with mocks. **No storefront/admin workflow** unless `BOG_AUTOMATIC_CHARGE_WORKFLOW_ENABLED=true` (default false). Pika has no subscription product |
+| Current Luma status | Provider function implemented and tested with mocks. **No storefront/admin workflow** unless `BOG_AUTOMATIC_CHARGE_WORKFLOW_ENABLED=true` (default false). Luma has no subscription product |
 | Implementation | `src/server/payments/bog/savedCard.ts` |
 | DB | `ProviderAction` type `automatic_charge` |
 | Checkout UI | Hidden |
@@ -280,7 +280,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | Field | Value |
 | --- | --- |
 | Documentation | https://api.bog.ge/docs/en/payments/preauthorization/ |
-| **Classification** | **NOT APPLICABLE TO PIKA** — navigation index |
+| **Classification** | **NOT APPLICABLE TO LUMA** — navigation index |
 
 ---
 
@@ -298,7 +298,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | `card`, `google_pay`, `apple_pay` |
 | Callback / reconciliation | Callback covers preauth approvals; `blocked` is **AUTHORIZED**, not PAID |
 | Merchant activation | Pre-authorization / manual capture |
-| Current Pika status | Implemented; `capture=manual` only for card / Apple Pay / Google Pay when `BOG_PREAUTHORIZATION_ENABLED` |
+| Current Luma status | Implemented; `capture=manual` only for card / Apple Pay / Google Pay when `BOG_PREAUTHORIZATION_ENABLED` |
 | Implementation | `src/server/payments/bog/preauth.ts`, `status.ts`, admin capture/void |
 | DB | `Payment.captureMode`, `authorizedAmount`, `capturedAmount`; attempt status `authorized` / `voided` |
 | Checkout UI | No separate “preauth” button |
@@ -322,7 +322,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | Same authorized payment |
 | Callback / reconciliation | Required; duplicate capture rejected locally |
 | Merchant activation | Preauth |
-| Current Pika status | Implemented |
+| Current Luma status | Implemented |
 | Implementation | `src/server/payments/bog/preauth.ts`, admin actions |
 | DB | `ProviderAction` type `capture` |
 | Admin UI | Full / partial capture when status is `authorized` |
@@ -345,7 +345,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | — |
 | Callback / reconciliation | Associated split request becomes `canceled` (Split Payment docs) |
 | Merchant activation | Preauth |
-| Current Pika status | Implemented |
+| Current Luma status | Implemented |
 | Implementation | `src/server/payments/bog/preauth.ts` |
 | DB | Attempt `voided`; inventory/promo release |
 | Admin UI | Reject with confirmation |
@@ -359,7 +359,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | Field | Value |
 | --- | --- |
 | Documentation | https://api.bog.ge/docs/en/payments/external-orders/ |
-| **Classification** | **NOT APPLICABLE TO PIKA** — navigation index |
+| **Classification** | **NOT APPLICABLE TO LUMA** — navigation index |
 
 ---
 
@@ -371,13 +371,13 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | Official endpoint(s) | SDK `https://webstatic.bog.ge/bog-sdk/bog-sdk.js?client_id={client_id}` (do not pass `version=2`; the live SDK treats it as an API selector and 405s on v2 calculate). Order still `POST /payments/v1/ecommerce/orders` with `payment_method: ["bog_loan"]` or `["bnpl"]` and `config.loan` (`type` = calculator `discount_code`, `month`) |
 | HTTP method | SDK + standard create-order `POST` |
 | Authentication | SDK uses public `client_id`; order uses Bearer |
-| Important request fields | Calculator: `amount`, optional `bnpl`. `onRequest` returns `{ amount, month, discount_code }`. Pika must **not** compute interest or monthly amounts |
-| Important response fields | BOG terms only; after server-side order creation Pika calls `successCb(providerOrderId)` so the official SDK can continue |
+| Important request fields | Calculator: `amount`, optional `bnpl`. `onRequest` returns `{ amount, month, discount_code }`. Luma must **not** compute interest or monthly amounts |
+| Important response fields | BOG terms only; after server-side order creation Luma calls `successCb(providerOrderId)` so the official SDK can continue |
 | Idempotency-Key | On create-order UUID v4 |
 | payment_method | `bog_loan` or `bnpl` |
 | Callback / reconciliation | Same as standard process |
 | Merchant activation | Installment / BNPL agreement and calculator |
-| Current Pika status | Implemented, default-off. Existing Pika `installment` (non-BOG, stock committed at placement) is unchanged |
+| Current Luma status | Implemented, default-off. Existing Luma `installment` (non-BOG, stock committed at placement) is unchanged |
 | Implementation | `src/components/checkout/BogInstallmentModal.tsx`, payload `config.loan` |
 | DB | `Payment.loanMonth`, `loanDiscountCode` |
 | Checkout UI | Shown only when `BOG_INSTALLMENT_ENABLED` / `BOG_BNPL_ENABLED` |
@@ -401,7 +401,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | `google_pay` |
 | Callback / reconciliation | Always reconcile via details/callback; 3DS redirect is UX |
 | Merchant activation | Google Pay on merchant page + BOG method + Google Pay console |
-| Current Pika status | Implemented, default-off; token never logged or stored |
+| Current Luma status | Implemented, default-off; token never logged or stored |
 | Implementation | `src/server/payments/bog/googlePay.ts`, checkout Google Pay button |
 | DB | Payment method `google_pay` |
 | Checkout UI | Official Google Pay button only when capability on |
@@ -425,7 +425,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | `apple_pay` |
 | Callback / reconciliation | After Accept Payment |
 | Merchant activation | Apple Pay certificate on domain; email `ecommercemerchants@bog.ge` with domain + API public key; Apple merchant onboarding |
-| Current Pika status | Implemented, default-off |
+| Current Luma status | Implemented, default-off |
 | Implementation | `src/server/payments/bog/applePay.ts` |
 | DB | Payment method `apple_pay` |
 | Checkout UI | Hidden until Apple + BOG flags |
@@ -449,7 +449,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | `apple_pay` |
 | Callback / reconciliation | Required |
 | Merchant activation | Same as Apple Pay webpage |
-| Current Pika status | Implemented; token never logged/stored |
+| Current Luma status | Implemented; token never logged/stored |
 | Implementation | `src/server/payments/bog/applePay.ts` |
 | DB | `ProviderAction` `apple_pay_accept` |
 | Checkout UI | Completes the Apple sheet |
@@ -472,7 +472,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | Refundability depends on transfer method |
 | Callback / reconciliation | `refunded` / `refunded_partially` via details/callback |
 | Merchant activation | Refunds on the shop |
-| Current Pika status | Full + partial + cumulative protection production-tested for card; extended to Apple/Google Pay methods; loan/BNPL/p2p/loyalty/gift_card not partially refunded |
+| Current Luma status | Full + partial + cumulative protection production-tested for card; extended to Apple/Google Pay methods; loan/BNPL/p2p/loyalty/gift_card not partially refunded |
 | Implementation | `src/server/payments/refund.ts`, `refundable.ts`, `refundReconcile.ts` |
 | DB | `PaymentRefund` |
 | Admin UI | Existing refund form; only legal actions |
@@ -495,7 +495,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | — |
 | Callback / reconciliation | Codes stored on Payment; unknown codes are not treated as permanent failure by themselves |
 | Merchant activation | — |
-| Current Pika status | Centralized normalizer; Georgian customer copy vs admin diagnostic |
+| Current Luma status | Centralized normalizer; Georgian customer copy vs admin diagnostic |
 | Implementation | `src/server/payments/bog/responseCodes.ts` |
 | DB | Existing `responseCode` / `responseDescription` |
 | Checkout / admin | Customer sees safe Georgian text; admin sees code + EN diagnostic |
@@ -518,7 +518,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | Compatibility as above |
 | Callback / reconciliation | Callback includes split updates. **Refund does not reverse** a completed/in-progress split |
 | Merchant activation | Split product; GEL IBANs; sufficient main-account balance |
-| Current Pika status | Implemented; destinations from admin/system config only (never customer-submitted) |
+| Current Luma status | Implemented; destinations from admin/system config only (never customer-submitted) |
 | Implementation | `src/server/payments/bog/split.ts`, `BogSplitRecipient` |
 | DB | Recipients + `Payment.splitStatus` / `splitSnapshot` |
 | Checkout UI | None (customer cannot choose IBANs) |
@@ -542,7 +542,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | payment_method | `google_pay` |
 | Callback / reconciliation | Standard |
 | Merchant activation | Business Manager Google Pay onboarding + Google ToS |
-| Current Pika status | When `BOG_HOSTED_GOOGLE_PAY_ENABLED`, Card create-order includes `google_pay`. No Pika Google Pay button. `config.google_pay.external` is not sent |
+| Current Luma status | When `BOG_HOSTED_GOOGLE_PAY_ENABLED`, Card create-order includes `google_pay`. No Luma Google Pay button. `config.google_pay.external` is not sent |
 | Implementation | `src/server/payments/bog/capabilities.ts`, `payload.ts` |
 | DB | Unchanged (method comes back on details) |
 | Checkout UI | Still the card option; BOG page may show Google Pay |
@@ -559,7 +559,7 @@ These values exist only on the Order Request `payment_method` list (no dedicated
 | Documentation | https://api.bog.ge/docs/en/payments/terms-used |
 | Official endpoint(s) | None |
 | Notes | Defines Business, Online Payments Page, Callback, credentials, PAN |
-| **Classification** | **NOT APPLICABLE TO PIKA** — glossary only. Pika follows these terms (never stores PAN/CVV) |
+| **Classification** | **NOT APPLICABLE TO LUMA** — glossary only. Luma follows these terms (never stores PAN/CVV) |
 
 ---
 
@@ -605,8 +605,8 @@ See `src/server/payments/bog/capabilities.ts` and `docs/bog-onboarding.md`.
 ## Implementation notes (this change set)
 
 - Standard card create-order uses `capture: automatic` and `payment_method: ["card"]` plus flagged hosted methods. Loan/BNPL are never added to the Card list. `capture=manual` is never applied to loan/BNPL/saved-card even if the preauth merchant flag is on.
-- `blocked` maps to Pika `authorized` (inventory stays HELD). `partial_completed` maps to `paid`.
+- `blocked` maps to Luma `authorized` (inventory stays HELD). `partial_completed` maps to `paid`.
 - `request_received` on capture/reject/refund is stored as accepted, not completed.
 - Automatic saved-card charging is implemented as a provider function and remains workflow-disabled.
-- Existing Pika `installment` (non-BOG, stock committed at placement) is unchanged.
+- Existing Luma `installment` (non-BOG, stock committed at placement) is unchanged.
 

@@ -116,7 +116,7 @@ describe("content quality manifest validation", () => {
       proposedSlug: "new-a",
       proposedShortDescription: "Short A unique text here for testing minimum useful length ok",
       proposedFullDescription: "Full A unique body with enough words to pass validation comfortably here.",
-      proposedSeoTitle: "Same Title | Pika",
+      proposedSeoTitle: "Same Title | Luma",
       proposedSeoDescription: "Meta A",
     };
     const entries: SeoManifestEntry[] = [
@@ -166,10 +166,10 @@ describe("AI content infrastructure", () => {
     assert.ok(invented.some((f) => f.code === "INVENTED_SPEC"));
     assert.ok(!invented.some((f) => f.code === "UNSUPPORTED_PRICE_CLAIM"));
 
-    const approved = validateAiClaims("შეიძინe იაფად Pika-ში საუკეთესო ფასად", facts);
+    const approved = validateAiClaims("შეიძინe იაფად Luma-ში საუკეთესო ფასად", facts);
     assert.ok(approved.some((f) => f.code === "MIXED_SCRIPT_GEORGIAN"));
 
-    const clean = validateAiClaims("შეიძინე იაფად Pika-ში საუკეთესო ფასად", facts);
+    const clean = validateAiClaims("შეიძინე იაფად Luma-ში საუკეთესო ფასად", facts);
     assert.ok(!clean.some((f) => f.code === "MIXED_SCRIPT_GEORGIAN"));
     assert.ok(!clean.some((f) => f.code === "UNSUPPORTED_PRICE_CLAIM"));
   });
@@ -232,7 +232,7 @@ describe("mixed-script Georgian token detection", () => {
   ];
 
   const validExamples: Array<{ text: string; label: string }> = [
-    { text: "Pika-ში", label: "Pika-ში" },
+    { text: "Luma-ში", label: "Luma-ში" },
     { text: "iPhone-ის", label: "iPhone-ის" },
     { text: "ASUS-ის", label: "ASUS-ის" },
     { text: "SSD-ით", label: "SSD-ით" },
@@ -257,8 +257,8 @@ describe("mixed-script Georgian token detection", () => {
   }
 
   it("flags invalid tokens inside sentences but allows valid hybrids in context", () => {
-    assert.equal(containsMixedScriptGeorgian("შეიძინe Pika-ში."), true);
-    assert.equal(containsMixedScriptGeorgian("შეიძინე Pika-ში."), false);
+    assert.equal(containsMixedScriptGeorgian("შეიძინe Luma-ში."), true);
+    assert.equal(containsMixedScriptGeorgian("შეიძინე Luma-ში."), false);
   });
 
   it("does not flag correct Georgian homoglyphs (ე/ი) as Latin", () => {
@@ -409,9 +409,9 @@ describe("DUPLICATE_BRAND false-positive guard", () => {
       currentSlug: null,
       proposedSlug: `slug-${sku}`,
       proposedShortDescription: short,
-      proposedFullDescription: `${short} ნახე ფასი Pika-ში და შეიძინე ონლაინ.`,
-      proposedSeoTitle: `${short} | Pika`,
-      proposedSeoDescription: `${short} Pika-ში — ნახე ფასი და შეიძინე ონლაინ.`,
+      proposedFullDescription: `${short} ნახე ფასი Luma-ში და შეიძინე ონლაინ.`,
+      proposedSeoTitle: `${short} | Luma`,
+      proposedSeoDescription: `${short} Luma-ში — ნახე ფასი და შეიძინე ონლაინ.`,
     };
   }
 

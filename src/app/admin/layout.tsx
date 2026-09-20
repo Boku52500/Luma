@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: {
-    default: "ადმინი — Pika",
-    template: "%s — Pika ადმინი",
+    default: "ადმინი — Luma",
+    template: "%s — Luma ადმინი",
   },
   robots: { index: false, follow: false },
 };

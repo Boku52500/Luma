@@ -6,8 +6,8 @@ import { LoginPageClient } from "@/components/auth/LoginPageClient";
 import { noIndexMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "შესვლა — Pika",
-  description: "შედით თქვენს Pika ანგარიშში.",
+  title: "შესვლა — Luma",
+  description: "შედით თქვენს Luma ანგარიშში.",
   ...noIndexMetadata,
 };
 

@@ -108,7 +108,7 @@ const officialReceiptSample = {
 
 const completedCardPayment = {
   order_id: "bog-completed-1",
-  external_order_id: "PIKA-1",
+  external_order_id: "LUMA-1",
   capture: "automatic",
   order_status: { key: "completed", value: "გადახდილი" },
   purchase_units: {
@@ -159,7 +159,7 @@ describe("bogPaymentDetailsSchema", () => {
         providerOrderId: "bog-completed-1",
         amount: "10.90",
         currency: "GEL",
-        orderNumber: "PIKA-1",
+        orderNumber: "LUMA-1",
       }).ok,
       true,
     );
@@ -168,7 +168,7 @@ describe("bogPaymentDetailsSchema", () => {
         providerOrderId: "bog-completed-1",
         amount: "10.9",
         currency: "GEL",
-        orderNumber: "PIKA-1",
+        orderNumber: "LUMA-1",
       }).ok,
       true,
     );
@@ -177,7 +177,7 @@ describe("bogPaymentDetailsSchema", () => {
   it("accepts a processing payment with null optional payment fields", () => {
     const parsed = bogPaymentDetailsSchema.safeParse({
       order_id: "bog-processing-1",
-      external_order_id: "PIKA-1",
+      external_order_id: "LUMA-1",
       order_status: { key: "processing", value: null },
       purchase_units: {
         request_amount: "289.00",
@@ -208,7 +208,7 @@ describe("bogPaymentDetailsSchema", () => {
   it("accepts a rejected payment", () => {
     const parsed = bogPaymentDetailsSchema.safeParse({
       order_id: "bog-rejected-1",
-      external_order_id: "PIKA-1",
+      external_order_id: "LUMA-1",
       order_status: { key: "rejected", value: "უარყოფილი" },
       purchase_units: {
         request_amount: "10.90",
@@ -233,7 +233,7 @@ describe("bogPaymentDetailsSchema", () => {
   it("accepts monetary strings, numeric codes, and a string transfer_method", () => {
     const parsed = bogPaymentDetailsSchema.safeParse({
       order_id: "bog-loose-1",
-      external_order_id: "PIKA-1",
+      external_order_id: "LUMA-1",
       order_status: "completed",
       purchase_units: {
         request_amount: "10.90",
@@ -278,7 +278,7 @@ describe("bogCallbackEnvelopeSchema", () => {
         providerOrderId: "bog-completed-1",
         amount: "10.90",
         currency: "GEL",
-        orderNumber: "PIKA-1",
+        orderNumber: "LUMA-1",
       }).ok,
       true,
     );

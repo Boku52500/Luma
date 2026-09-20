@@ -19,7 +19,7 @@ import type {
  */
 
 export function getSku(product: Product): string {
-  return product.sku ?? `PIKA-${product.id.toUpperCase()}`;
+  return product.sku ?? `LUMA-${product.id.toUpperCase()}`;
 }
 
 /** Deterministic PDP gallery — falls back to visual/secondaryVisual + tone variations. */

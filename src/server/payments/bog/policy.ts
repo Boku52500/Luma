@@ -12,7 +12,7 @@ export type HostedMethodCaps = {
 };
 
 /**
- * Methods for Pika's standard "Card" checkout on BOG's hosted page.
+ * Methods for Luma's standard "Card" checkout on BOG's hosted page.
  *
  * `card` is always included. Hosted wallets / P2P / loyalty are added only
  * when their flags are on. Do not omit `payment_method` — an empty list lets

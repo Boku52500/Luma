@@ -17,7 +17,7 @@ export default function ForbiddenPage() {
         <Container className="py-16">
           <h1 className="text-h2 text-text">წვდომა აკრძალულია</h1>
           <p className="text-body mt-3 max-w-lg text-text-muted">
-            ამ გვერდის სანახავად საჭიროა ადმინისტრატორის უფლება. თუ თქვენ ხართ Pika-ს თანამშრომელი,
+            ამ გვერდის სანახავად საჭიროა ადმინისტრატორის უფლება. თუ თქვენ ხართ Luma-ს თანამშრომელი,
             სთხოვეთ ოპერაციების გუნდს ანგარიშის დაწინაურება.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">

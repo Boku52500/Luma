@@ -16,7 +16,7 @@ function assert(condition: unknown, message: string): asserts condition {
 
 async function main() {
   const mode = process.env.NODE_ENV === "production" ? "production" : "development";
-  console.log(`Pika production verify (${mode})`);
+  console.log(`Luma production verify (${mode})`);
 
   const issues = collectEnvIssues(mode);
   for (const issue of issues) {

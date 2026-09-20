@@ -58,7 +58,7 @@ export function RegisterPageClient() {
   return (
     <AuthLayout
       title="რეგისტრაცია"
-      subtitle="შექმენით Pika ანგარიში რამდენიმე წამში"
+      subtitle="შექმენით Luma ანგარიში რამდენიმე წამში"
       footer={
         <p className="text-small text-text-muted">
           უკვე გაქვთ ანგარიში?{" "}

@@ -35,7 +35,7 @@ describe("callback payload matching", () => {
   it("requires provider id, external order id, currency, and amount", () => {
     const details = {
       order_id: "bog-1",
-      external_order_id: "PIKA-1",
+      external_order_id: "LUMA-1",
       order_status: { key: "completed" },
       purchase_units: { request_amount: "10.00", transfer_amount: "10.00", currency_code: "GEL" },
     };
@@ -51,7 +51,7 @@ describe("callback payload matching", () => {
         providerOrderId: "bog-1",
         amount: "10.00",
         currency: "GEL",
-        orderNumber: "PIKA-1",
+        orderNumber: "LUMA-1",
       }).ok,
       true,
     );
@@ -60,7 +60,7 @@ describe("callback payload matching", () => {
         providerOrderId: "bog-1",
         amount: "9.00",
         currency: "GEL",
-        orderNumber: "PIKA-1",
+        orderNumber: "LUMA-1",
       }).ok,
       false,
     );
@@ -69,7 +69,7 @@ describe("callback payload matching", () => {
         providerOrderId: "bog-other",
         amount: "10.00",
         currency: "GEL",
-        orderNumber: "PIKA-1",
+        orderNumber: "LUMA-1",
       }).ok,
       false,
     );

@@ -23,7 +23,7 @@ const searchRobots = { index: false, follow: true } as const;
 export async function generateMetadata({ searchParams }: SearchPageProps): Promise<Metadata> {
   const query = extractQuery((await searchParams).q);
   return {
-    title: query ? `ძიების შედეგები: "${query}" — Pika` : "ძიება — Pika",
+    title: query ? `ძიების შედეგები: "${query}" — Luma` : "ძიება — Luma",
     robots: searchRobots,
   };
 }

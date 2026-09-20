@@ -17,7 +17,7 @@ export async function generateMetadata({
   const page = getInfoPage(slug);
   if (!page) notFound();
   return {
-    title: `${page.title} — Pika`,
+    title: `${page.title} — Luma`,
     description: page.description,
     robots: page.needsAdminReview ? noIndexRobots : undefined,
     ...pageCanonical(`/${page.slug}`),

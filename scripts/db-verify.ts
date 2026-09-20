@@ -48,7 +48,7 @@ function assertJsonSafe(value: unknown, path: string): void {
 }
 
 async function main() {
-  console.log("Pika database verify");
+  console.log("Luma database verify");
 
   await pingDatabase();
   console.log("  PostgreSQL reachable");

@@ -12,11 +12,11 @@ import {
   type OrderEmailSnapshot,
 } from "./templates";
 
-const CTA = { href: "https://pika.ge/checkout/success", label: "შეკვეთის ნახვა" };
+const CTA = { href: "https://luma.ge/checkout/success", label: "შეკვეთის ნახვა" };
 
 function snapshot(over: Partial<OrderEmailSnapshot> = {}): OrderEmailSnapshot {
   return {
-    orderNumber: "PIKA-1001",
+    orderNumber: "LUMA-1001",
     firstName: "ნინო",
     customerEmail: "guest@example.com",
     paymentMethod: "card",
@@ -35,12 +35,12 @@ function snapshot(over: Partial<OrderEmailSnapshot> = {}): OrderEmailSnapshot {
 
 describe("password reset email", () => {
   it("uses the Georgian subject and the real reset URL", () => {
-    const url = "https://pika.ge/reset-password?token=abc.def";
+    const url = "https://luma.ge/reset-password?token=abc.def";
     const rendered = renderPasswordResetEmail({ resetUrl: url });
-    assert.equal(rendered.subject, "Pika — პაროლის აღდგენა");
+    assert.equal(rendered.subject, "Luma — პაროლის აღდგენა");
     assert.match(rendered.html, /პაროლის აღდგენა/);
-    assert.match(rendered.html, /https:\/\/pika\.ge\/reset-password\?token=abc\.def/);
-    assert.match(rendered.text, /https:\/\/pika\.ge\/reset-password\?token=abc\.def/);
+    assert.match(rendered.html, /https:\/\/luma\.ge\/reset-password\?token=abc\.def/);
+    assert.match(rendered.text, /https:\/\/luma\.ge\/reset-password\?token=abc\.def/);
   });
 });
 
@@ -57,10 +57,10 @@ describe("order confirmation", () => {
       }),
       CTA,
     );
-    assert.equal(rendered.subject, "შეკვეთა მიღებულია — PIKA-1001");
+    assert.equal(rendered.subject, "შეკვეთა მიღებულია — LUMA-1001");
     assert.match(rendered.html, /Snapshot Phone × 2/);
     assert.match(rendered.html, /SAVE5/);
-    assert.match(rendered.text, /PIKA-1001/);
+    assert.match(rendered.text, /LUMA-1001/);
   });
 
   it("does not say the card order is paid at creation", () => {
@@ -75,7 +75,7 @@ describe("order confirmation", () => {
 describe("payment and refund templates", () => {
   it("uses paid amount and Georgian paid subject", () => {
     const rendered = renderPaymentPaidEmail(snapshot(), { amount: 3309, paidAt: new Date("2026-08-27T12:00:00Z") }, CTA);
-    assert.equal(rendered.subject, "გადახდა დადასტურებულია — PIKA-1001");
+    assert.equal(rendered.subject, "გადახდა დადასტურებულია — LUMA-1001");
     assert.match(rendered.html, /3 309 ₾/);
   });
 
@@ -90,17 +90,17 @@ describe("payment and refund templates", () => {
       refundedAmount: 3309,
       cumulativeAmount: 3309,
     }, CTA);
-    assert.equal(partial.subject, "თანხის ნაწილი დაბრუნებულია — PIKA-1001");
-    assert.equal(full.subject, "თანხა დაბრუნებულია — PIKA-1001");
+    assert.equal(partial.subject, "თანხის ნაწილი დაბრუნებულია — LUMA-1001");
+    assert.equal(full.subject, "თანხა დაბრუნებულია — LUMA-1001");
   });
 });
 
 describe("order status templates", () => {
   it("uses Georgian subjects for fulfillment transitions", () => {
-    assert.equal(renderOrderStatusEmail(snapshot(), "processing", CTA).subject, "თქვენი შეკვეთა მუშავდება — PIKA-1001");
-    assert.equal(renderOrderStatusEmail(snapshot(), "shipped", CTA).subject, "თქვენი შეკვეთა გაიგზავნა — PIKA-1001");
-    assert.equal(renderOrderStatusEmail(snapshot(), "delivered", CTA).subject, "შეკვეთა ჩაბარდა — PIKA-1001");
-    assert.equal(renderOrderStatusEmail(snapshot(), "cancelled", CTA).subject, "შეკვეთა გაუქმებულია — PIKA-1001");
+    assert.equal(renderOrderStatusEmail(snapshot(), "processing", CTA).subject, "თქვენი შეკვეთა მუშავდება — LUMA-1001");
+    assert.equal(renderOrderStatusEmail(snapshot(), "shipped", CTA).subject, "თქვენი შეკვეთა გაიგზავნა — LUMA-1001");
+    assert.equal(renderOrderStatusEmail(snapshot(), "delivered", CTA).subject, "შეკვეთა ჩაბარდა — LUMA-1001");
+    assert.equal(renderOrderStatusEmail(snapshot(), "cancelled", CTA).subject, "შეკვეთა გაუქმებულია — LUMA-1001");
   });
 });
 

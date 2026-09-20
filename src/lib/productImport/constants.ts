@@ -9,4 +9,4 @@ export const REQUIRED_EXCEL_COLUMNS = [
 
 export type RequiredExcelColumn = (typeof REQUIRED_EXCEL_COLUMNS)[number];
 
-export const SEO_TITLE_SUFFIX = " | Pika";
+export const SEO_TITLE_SUFFIX = " | Luma";

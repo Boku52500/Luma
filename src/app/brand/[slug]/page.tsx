@@ -18,7 +18,7 @@ export async function generateMetadata({
   if (!page) notFound();
 
   return {
-    title: page.brand.seoTitle ?? `${page.brand.name} — Pika`,
+    title: page.brand.seoTitle ?? `${page.brand.name} — Luma`,
     description: page.brand.seoDescription ?? page.brand.description ?? undefined,
     robots: page.brand.indexable ? undefined : noIndexRobots,
     ...pageCanonical(`/brand/${slug}`, page.brand.canonicalOverride),

@@ -42,7 +42,7 @@ export type ContentQualityReport = {
     gavadebit: number;
     fasi: number;
     sheidzine: number;
-    pika: number;
+    luma: number;
   };
 };
 
@@ -133,8 +133,8 @@ export function analyzeContentQuality(entries: SeoManifestEntry[]): ContentQuali
     "შეიძინე",
     "განვადებით",
     "გაეცანი ფასს",
-    "Pika-ში",
-    "Pika-ს",
+    "Luma-ში",
+    "Luma-ს",
     "იდეალურია",
     "გამოირჩევა",
   ];
@@ -185,7 +185,7 @@ export function analyzeContentQuality(entries: SeoManifestEntry[]): ContentQuali
       gavadebit: countPhrase([...fulls, ...metas], "განვადებით"),
       fasi: countPhrase([...fulls, ...metas], "ფას"),
       sheidzine: countPhrase([...fulls, ...metas, ...shorts], "შეიძინ"),
-      pika: countPhrase([...fulls, ...metas, ...titles], "Pika"),
+      luma: countPhrase([...fulls, ...metas, ...titles], "Luma"),
     },
   };
 }

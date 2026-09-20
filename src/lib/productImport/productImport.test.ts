@@ -50,7 +50,7 @@ describe("product import excel mapping", () => {
   });
 
   it("preserves Georgian unicode in parsed rows", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pika-import-"));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "luma-import-"));
     const file = path.join(dir, "georgian.xlsx");
     writeWorkbook(
       file,
@@ -76,7 +76,7 @@ describe("product import category aliases", () => {
     assert.equal(resolved.resolvedLabel, "ტელევიზორები");
     assert.equal(resolved.aliasApplied, true);
 
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pika-import-"));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "luma-import-"));
     const file = path.join(dir, "tv-alias.xlsx");
     writeWorkbook(file, [...REQUIRED_EXCEL_COLUMNS], [[700, "ტელევიზორი", "Samsung", "Samsung TV 55", 1999]]);
 
@@ -99,7 +99,7 @@ describe("product import category aliases", () => {
   });
 
   it("does not merge unrelated near-duplicates such as ქეისები and აქციები", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pika-import-"));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "luma-import-"));
     const file = path.join(dir, "cases.xlsx");
     writeWorkbook(file, [...REQUIRED_EXCEL_COLUMNS], [[701, "ქეისები", "Asus", "Asus Case", 120]]);
 
@@ -131,7 +131,7 @@ describe("product import normalization", () => {
 
 describe("product import duplicate and skip rules", () => {
   it("skips existing database SKUs without planning create", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pika-import-"));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "luma-import-"));
     const file = path.join(dir, "existing.xlsx");
     writeWorkbook(file, [...REQUIRED_EXCEL_COLUMNS], [[9, "CPU", "Intel", "Intel X", 100]]);
 
@@ -187,7 +187,7 @@ describe("product import content generation", () => {
       shortIndexes.add(content.templateIndex.short);
       fullIndexes.add(content.templateIndex.full);
       seoIndexes.add(content.templateIndex.seo);
-      assert.match(content.seoTitle, /Pika/);
+      assert.match(content.seoTitle, /Luma/);
       assert.doesNotMatch(content.shortDescription, /(8|16|32)\s*core/i);
       assert.doesNotMatch(content.fullDescription, /\d+\s*GHz\b/i);
     }
@@ -223,7 +223,7 @@ describe("product import slug and safety defaults", () => {
   });
 
   it("does not plan stock or old price from ignored columns", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pika-import-"));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "luma-import-"));
     const file = path.join(dir, "ignored.xlsx");
     writeWorkbook(
       file,
@@ -267,7 +267,7 @@ describe("product import content preview set", () => {
     for (const row of preview) {
       assert.ok(row.shortDescription.length > 20);
       assert.ok(row.fullDescription.length > 40);
-      assert.match(row.seoTitle, /Pika/);
+      assert.match(row.seoTitle, /Luma/);
     }
   });
 });

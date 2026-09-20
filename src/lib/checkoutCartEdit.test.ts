@@ -14,11 +14,11 @@ describe("checkout cart line removal", () => {
   });
 
   it("recalculates promo discount after the subtotal changes", () => {
-    const before = evaluatePromoCode("PIKA10", 200);
+    const before = evaluatePromoCode("LUMA10", 200);
     assert.equal(before.valid, true);
     assert.equal(before.discount, 20);
 
-    const after = evaluatePromoCode("PIKA10", 100);
+    const after = evaluatePromoCode("LUMA10", 100);
     assert.equal(after.valid, true);
     assert.equal(after.discount, 10);
     assert.equal(getCartTotal(100, after.discount, 9.9), 99.9);

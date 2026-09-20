@@ -7,7 +7,7 @@ import { getPaymentPageData } from "@/server/payments/load";
 import { noIndexMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "გადახდა ვერ შესრულდა — Pika",
+  title: "გადახდა ვერ შესრულდა — Luma",
   description: "გადახდა ვერ დასრულდა.",
   ...noIndexMetadata,
 };

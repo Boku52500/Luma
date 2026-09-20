@@ -5,7 +5,7 @@ import { CartPageClient } from "@/components/cart/CartPageClient";
 import { noIndexMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "კალათა — Pika",
+  title: "კალათა — Luma",
   description: "თქვენი კალათა — გადახედეთ დამატებულ პროდუქტებს და გააგრძელეთ შეკვეთა.",
   ...noIndexMetadata,
 };

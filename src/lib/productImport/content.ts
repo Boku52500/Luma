@@ -51,41 +51,41 @@ function nameWithOptionalBrand(input: ProductContentInput): string {
 
 const SHORT_TEMPLATES: Array<(input: ProductContentInput) => string> = [
   (input) =>
-    `${input.name} არის ${input.brand}-ის პროდუქტი ${categoryFromCatalog(input.category)}. მოდელი ხელმისაწვდომია Pika-ში.`,
+    `${input.name} არის ${input.brand}-ის პროდუქტი ${categoryFromCatalog(input.category)}. მოდელი ხელმისაწვდომია Luma-ში.`,
   (input) =>
-    `აღმოაჩინე ${input.name} — ${input.brand}-ის მოდელი ${categoryInCatalog(input.category)} Pika-ს ონლაინ მაღაზიაში.`,
+    `აღმოაჩინე ${input.name} — ${input.brand}-ის მოდელი ${categoryInCatalog(input.category)} Luma-ს ონლაინ მაღაზიაში.`,
   (input) =>
-    `${nameWithOptionalBrand(input)} წარმოდგენილია Pika-ს კატალოგში, ${categoryInCatalog(input.category)}.`,
+    `${nameWithOptionalBrand(input)} წარმოდგენილია Luma-ს კატალოგში, ${categoryInCatalog(input.category)}.`,
   (input) =>
-    `${input.name} (${input.brand}) განთავსებულია ${categoryInCatalog(input.category)} Pika-ში შესაძენად.`,
+    `${input.name} (${input.brand}) განთავსებულია ${categoryInCatalog(input.category)} Luma-ში შესაძენად.`,
 ];
 
 const FULL_TEMPLATES: Array<(input: ProductContentInput) => string[]> = [
   (input) => [
     `${input.name} წარმოადგენს ${input.brand}-ის პროდუქტს ${categoryInCatalog(input.category)}.`,
-    `${input.brand} კატალოგის ეს მოდელი Pika-ში ონლაინ შესაძენადაა ხელმისაწვდომი.`,
-    `დაათვალიერეთ ${input.name}, გაეცანით ფასს და დეტალებს Pika-ს ვებგვერდზე.`,
+    `${input.brand} კატალოგის ეს მოდელი Luma-ში ონლაინ შესაძენადაა ხელმისაწვდომი.`,
+    `დაათვალიერეთ ${input.name}, გაეცანით ფასს და დეტალებს Luma-ს ვებგვერდზე.`,
   ],
   (input) => [
     `${input.name} — ${input.brand}-ის არჩევანი ${categoryFromCatalog(input.category)}.`,
-    `Pika-ს კატალოგში ეს მოდელი განთავსებულია ${categoryInCatalog(input.category)}, რათა მარტივად იპოვოთ საჭირო პროდუქტი.`,
+    `Luma-ს კატალოგში ეს მოდელი განთავსებულია ${categoryInCatalog(input.category)}, რათა მარტივად იპოვოთ საჭირო პროდუქტი.`,
     `შეიძინეთ ${input.name} ონლაინ და გაეცანით სრულ ინფორმაციას პროდუქტის გვერდზე.`,
   ],
   (input) => [
-    `${nameWithOptionalBrand(input)} Pika-ს ${categoryInCatalog(input.category)} განყოფილებაშია წარმოდგენილი.`,
-    `${input.name} შეგიძლიათ დაათვალიეროთ Pika-ში — ფასი, აღწერა და შეძენის პირობები ხელმისაწვდომია ონლაინ.`,
+    `${nameWithOptionalBrand(input)} Luma-ს ${categoryInCatalog(input.category)} განყოფილებაშია წარმოდგენილი.`,
+    `${input.name} შეგიძლიათ დაათვალიეროთ Luma-ში — ფასი, აღწერა და შეძენის პირობები ხელმისაწვდომია ონლაინ.`,
   ],
 ];
 
 const SEO_DESC_TEMPLATES: Array<(input: ProductContentInput) => string> = [
   (input) =>
-    `${input.name} — ${input.brand}, ${quotedCategory(input.category)} Pika-ში. გაეცანით ფასსა და დეტალებს ონლაინ.`,
+    `${input.name} — ${input.brand}, ${quotedCategory(input.category)} Luma-ში. გაეცანით ფასსა და დეტალებს ონლაინ.`,
   (input) =>
-    `${input.name} (${input.brand}) ${categoryInCatalog(input.category)} Pika-ს მაღაზიაში. დაათვალიერეთ და შეიძინეთ ონლაინ.`,
+    `${input.name} (${input.brand}) ${categoryInCatalog(input.category)} Luma-ს მაღაზიაში. დაათვალიერეთ და შეიძინეთ ონლაინ.`,
   (input) =>
-    `Pika-ში: ${input.name}, ${input.brand}, ${quotedCategory(input.category)}. იხილეთ პროდუქტი და მისი ფასი.`,
+    `Luma-ში: ${input.name}, ${input.brand}, ${quotedCategory(input.category)}. იხილეთ პროდუქტი და მისი ფასი.`,
   (input) =>
-    `${nameWithOptionalBrand(input)} — ${quotedCategory(input.category)} კატეგორია Pika-ში. დეტალური ინფორმაცია ონლაინ.`,
+    `${nameWithOptionalBrand(input)} — ${quotedCategory(input.category)} კატეგორია Luma-ში. დეტალური ინფორმაცია ონლაინ.`,
 ];
 
 function toContentInput(sku: string, name: string, brand: string, category: string): ProductContentInput {
@@ -106,7 +106,7 @@ export function generateFullDescription(sku: string, name: string, brand: string
   return paragraphs.map(cleanGeneratedText).join("\n\n");
 }
 
-/** SEO title following Pika convention: [Product Name] | Pika */
+/** SEO title following Luma convention: [Product Name] | Luma */
 export function generateSeoTitle(name: string): string {
   const title = `${name}${SEO_TITLE_SUFFIX}`;
   return title.length <= 255 ? title : `${name.slice(0, 255 - SEO_TITLE_SUFFIX.length)}${SEO_TITLE_SUFFIX}`;

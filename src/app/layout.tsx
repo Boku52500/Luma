@@ -16,9 +16,9 @@ const bodyFont = Noto_Sans_Georgian({
 
 export const metadata: Metadata = {
   metadataBase: getAppOrigin(),
-  title: "Pika — ტექნოლოგიების მაღაზია საქართველოში",
+  title: "Luma — ტექნოლოგიების მაღაზია საქართველოში",
   description:
-    "Pika — ორიგინალი ტექნიკა და გაჯეტები ოფიციალური გარანტიით. სმარტფონები, ლეპტოპები, ტელევიზორები და აქსესუარები სწრაფი მიწოდებით მთელი საქართველოს მასშტაბით.",
+    "Luma — ორიგინალი ტექნიკა და გაჯეტები ოფიციალური გარანტიით. სმარტფონები, ლეპტოპები, ტელევიზორები და აქსესუარები სწრაფი მიწოდებით მთელი საქართველოს მასშტაბით.",
   icons: {
     icon: [{ url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" }],
     apple: [{ url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" }],

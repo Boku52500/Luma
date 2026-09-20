@@ -4,7 +4,7 @@ import { requireCustomer } from "@/server/auth/session";
 import { getPaymentPageData } from "@/server/payments/load";
 
 export const metadata: Metadata = {
-  title: "შეკვეთის დეტალები — Pika",
+  title: "შეკვეთის დეტალები — Luma",
   description: "შეკვეთის სრული დეტალები.",
 };
 

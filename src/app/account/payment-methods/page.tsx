@@ -4,7 +4,7 @@ import { listCustomerSavedPaymentMethods } from "@/server/payments/bog/savedCard
 import { PaymentMethodsPageClient } from "@/components/account/PaymentMethodsPageClient";
 
 export const metadata: Metadata = {
-  title: "გადახდის მეთოდები — Pika",
+  title: "გადახდის მეთოდები — Luma",
   description: "შენახული გადახდის მეთოდები.",
 };
 

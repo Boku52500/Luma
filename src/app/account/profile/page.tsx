@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ProfilePageClient } from "@/components/account/ProfilePageClient";
 
 export const metadata: Metadata = {
-  title: "პროფილი — Pika",
+  title: "პროფილი — Luma",
   description: "განაახლეთ საკონტაქტო ინფორმაცია.",
 };
 

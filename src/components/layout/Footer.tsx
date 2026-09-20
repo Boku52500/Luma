@@ -37,7 +37,7 @@ const socials: { label: string; Icon: ComponentType<SVGProps<SVGSVGElement>>; cl
 ];
 
 const contacts = [
-  { label: "info@pika.ge", href: "mailto:info@pika.ge", Icon: Mail },
+  { label: "info@luma.ge", href: "mailto:info@luma.ge", Icon: Mail },
   { label: "032 200 00 00", href: "tel:+995322000000", Icon: Phone },
   { label: "თბილისი, ვაჟა-ფშაველას გამზ. 71", href: undefined, Icon: MapPin },
 ];
@@ -119,7 +119,7 @@ export function Footer() {
 
         <div className="mt-10 flex flex-col items-center gap-4 border-t border-border pt-6 sm:mt-12 sm:flex-row sm:justify-between">
           <p className="text-small text-text-faint">
-            © {new Date().getFullYear()} Pika. ყველა უფლება დაცულია.
+            © {new Date().getFullYear()} Luma. ყველა უფლება დაცულია.
           </p>
           <div className="text-small tnum font-medium text-text-faint">
             VISA · Mastercard · განვადება

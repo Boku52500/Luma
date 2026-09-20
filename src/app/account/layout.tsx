@@ -6,7 +6,7 @@ import { noIndexMetadata } from "@/lib/seo";
 import { getStorefrontNav } from "@/server/catalog/nav";
 
 export const metadata: Metadata = {
-  title: "ანგარიში — Pika",
+  title: "ანგარიში — Luma",
   ...noIndexMetadata,
 };
 

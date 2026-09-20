@@ -1,6 +1,6 @@
 # Transactional email (Resend)
 
-Pika sends **transactional** mail only: password reset, order confirmation, BOG payment confirmation, refund confirmation, and admin fulfillment-status updates. There is no newsletter, subscription, abandoned-cart, SMS, or push layer.
+Luma sends **transactional** mail only: password reset, order confirmation, BOG payment confirmation, refund confirmation, and admin fulfillment-status updates. There is no newsletter, subscription, abandoned-cart, SMS, or push layer.
 
 The shop, checkout, and auth keep working if Resend is unconfigured. Sends then log `email.not_configured` and are stored as **failed** deliveries. Success is never faked.
 
@@ -9,15 +9,15 @@ The shop, checkout, and auth keep working if Resend is unconfigured. Sends then 
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `RESEND_API_KEY` | Production | Resend API key. Server-only. Never expose to client components. |
-| `EMAIL_FROM` | Production | Verified sender, e.g. `Pika <noreply@pika.ge>` |
-| `EMAIL_REPLY_TO` | Optional | Reply address (e.g. `info@pika.ge`) |
-| `APP_ORIGIN` | Production | Canonical origin for links (`https://pika.ge`). Local: `http://localhost:3000` via `AUTH_URL` / fallback. |
+| `EMAIL_FROM` | Production | Verified sender, e.g. `Luma <noreply@luma.ge>` |
+| `EMAIL_REPLY_TO` | Optional | Reply address (e.g. `info@luma.ge`) |
+| `APP_ORIGIN` | Production | Canonical origin for links (`https://luma.ge`). Local: `http://localhost:3000` via `AUTH_URL` / fallback. |
 | `EMAIL_OVERRIDE_TO` | Local only | Redirects every transactional recipient. **Ignored in production** unless `EMAIL_ALLOW_OVERRIDE=true`. |
 | `EMAIL_ALLOW_OVERRIDE` | Dangerous | Must be `true` to honor `EMAIL_OVERRIDE_TO` when `NODE_ENV=production`. Leave unset on Vercel. |
 
 Do not put API keys in this file or in git.
 
-Sender domain `pika.ge` must stay verified in the Resend dashboard. Links are built with `getAppOrigin()` / `getAppOriginString()` — templates do not hardcode `pika.ge`.
+Sender domain `luma.ge` must stay verified in the Resend dashboard. Links are built with `getAppOrigin()` / `getAppOriginString()` — templates do not hardcode `luma.ge`.
 
 ## Architecture
 
@@ -47,7 +47,7 @@ Awaiting the send inside `after()` is acceptable. Do not add a separate job queu
 | Type | When | Event key |
 | --- | --- | --- |
 | `password_reset` | Reset token created for an existing customer | `password-reset:{tokenId}` |
-| `order_confirmation` | Pika `Order` created (guest or signed-in) | `order-confirmation:{orderId}` |
+| `order_confirmation` | Luma `Order` created (guest or signed-in) | `order-confirmation:{orderId}` |
 | `payment_paid` | First authoritative transition into Payment `paid` | `payment-paid:{paymentId}` |
 | `refund_partial` | First transition into `partially_refunded` | `refund-completed:{paymentId}:partially_refunded` |
 | `refund_full` | First transition into `refunded` | `refund-completed:{paymentId}:refunded` |
@@ -97,7 +97,7 @@ Admin order detail shows a compact delivery history and can retry **failed** ord
 
 ### QA (use an address you control)
 
-1. Forgot password arrives; reset link is `https://pika.ge/reset-password?token=…`
+1. Forgot password arrives; reset link is `https://luma.ge/reset-password?token=…`
 2. Order confirmation arrives after checkout
 3. BOG PAID confirmation arrives from reconciliation, not only from the redirect page
 4. Duplicate callback does not duplicate the paid email

@@ -348,7 +348,7 @@ export async function rewriteCommercialClosingOnly(input: {
     const userPrompt = JSON.stringify(
       {
         instruction:
-          "Rewrite ONLY the final commercial closing sentence for this Georgian ecommerce product. Keep the factual body unchanged. Return JSON { commercialClosing }. One natural sentence with purchase/price/financing intent for Pika. Vary wording — do NOT copy overused catalogue closings. Never use საქართველოში. Do not invent specs.",
+          "Rewrite ONLY the final commercial closing sentence for this Georgian ecommerce product. Keep the factual body unchanged. Return JSON { commercialClosing }. One natural sentence with purchase/price/financing intent for Luma. Vary wording — do NOT copy overused catalogue closings. Never use საქართველოში. Do not invent specs.",
         product: {
           sku: input.sku,
           productName: input.productName,

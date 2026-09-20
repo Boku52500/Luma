@@ -4,7 +4,7 @@ import { requireCustomer } from "@/server/auth/session";
 import { listCustomerOrders } from "@/server/account/orders";
 
 export const metadata: Metadata = {
-  title: "შეკვეთები — Pika",
+  title: "შეკვეთები — Luma",
   description: "თქვენი შეკვეთების ისტორია.",
 };
 

@@ -78,7 +78,7 @@ export function PromoCodeField({ subtotal, className }: { subtotal: number; clas
                   event.stopPropagation();
                   handleApply();
                 }}
-                placeholder="მაგ: PIKA10"
+                placeholder="მაგ: LUMA10"
                 className="h-11 w-full rounded-[var(--radius-sm)] border border-border-strong pl-9 pr-3 text-[0.9375rem] text-text placeholder:text-text-faint focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-100"
               />
             </div>

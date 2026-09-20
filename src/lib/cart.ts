@@ -59,7 +59,7 @@ export interface PromoCodeResult {
  * only touches this one function, not any component.
  */
 const MOCK_PROMO_CODES: Record<string, number> = {
-  PIKA10: 0.1,
+  LUMA10: 0.1,
 };
 
 export function evaluatePromoCode(rawCode: string, subtotal: number): PromoCodeResult {

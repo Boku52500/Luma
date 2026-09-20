@@ -15,7 +15,7 @@ import {
 } from "@/lib/orderView";
 import { DEFAULT_LOCALE } from "@/server/locale";
 
-export const ORDER_CONFIRM_COOKIE = "pika_order_confirm";
+export const ORDER_CONFIRM_COOKIE = "luma_order_confirm";
 
 type VariantAxis = {
   attributeSlug?: string;

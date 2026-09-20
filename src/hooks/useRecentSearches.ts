@@ -2,7 +2,7 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 
-const STORAGE_KEY = "pika:recent-searches";
+const STORAGE_KEY = "luma:recent-searches";
 const MAX_RECENT = 5;
 const listeners = new Set<() => void>();
 

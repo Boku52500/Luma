@@ -5,8 +5,8 @@ import { ForgotPasswordPageClient } from "@/components/auth/ForgotPasswordPageCl
 import { noIndexMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "პაროლის აღდგენა — Pika",
-  description: "აღადგინეთ თქვენი Pika ანგარიშის პაროლი.",
+  title: "პაროლის აღდგენა — Luma",
+  description: "აღადგინეთ თქვენი Luma ანგარიშის პაროლი.",
   ...noIndexMetadata,
 };
 

@@ -111,10 +111,10 @@ describe("split validation", () => {
 
 describe("create-order payload extensions", () => {
   const base = {
-    callbackUrl: "https://pika.example/api/payments/bog/callback",
-    externalOrderId: "PIKA-1",
-    successUrl: "https://pika.example/ok",
-    failUrl: "https://pika.example/fail",
+    callbackUrl: "https://luma.example/api/payments/bog/callback",
+    externalOrderId: "LUMA-1",
+    successUrl: "https://luma.example/ok",
+    failUrl: "https://luma.example/fail",
     currency: "GEL",
     total: "10.00",
     discount: "0",
@@ -194,7 +194,7 @@ describe("payment details for new methods", () => {
     const details = bogPaymentDetailsSchema.parse({
       order_id: "ord-1",
       capture: "manual",
-      external_order_id: "PIKA-1",
+      external_order_id: "LUMA-1",
       order_status: { key: "blocked", value: "blocked" },
       purchase_units: { request_amount: "10.00", transfer_amount: "0", currency_code: "GEL" },
       payment_detail: {
@@ -234,7 +234,7 @@ describe("payment details for new methods", () => {
     const details = canonicalizeBogPaymentDetails(
       bogPaymentDetailsSchema.parse({
         order_id: "ord-1",
-        external_order_id: "PIKA-1",
+        external_order_id: "LUMA-1",
         order_status: { key: "partial_completed" },
         purchase_units: { request_amount: "100.00", transfer_amount: "40.00", currency_code: "GEL" },
       }),
@@ -243,7 +243,7 @@ describe("payment details for new methods", () => {
       providerOrderId: "ord-1",
       amount: new Prisma.Decimal("100.00"),
       currency: "GEL",
-      orderNumber: "PIKA-1",
+      orderNumber: "LUMA-1",
     });
     assert.equal(match.ok, true);
   });

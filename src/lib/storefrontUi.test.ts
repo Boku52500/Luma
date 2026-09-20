@@ -18,7 +18,7 @@ describe("storefront discount badges", () => {
   });
 });
 
-describe("primary blue button contrast", () => {
+describe("primary brand button contrast", () => {
   it("keeps white text on the primary brand background", () => {
     const primary = "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800";
     assert.equal(primary.includes("text-white"), true);

@@ -171,8 +171,8 @@ async function seedBrands() {
           create: {
             locale: "ka",
             name,
-            description: `${name} — ოფიციალური პროდუქცია Pika-ში.`,
-            seoTitle: `${name} | Pika`,
+            description: `${name} — ოფიციალური პროდუქცია Luma-ში.`,
+            seoTitle: `${name} | Luma`,
             seoDescription: `${name}-ის ორიგინალი ტექნიკა ოფიციალური გარანტიით.`,
           },
         },
@@ -199,8 +199,8 @@ async function seedCategories() {
             locale: "ka",
             name: category.name,
             description: category.description ?? null,
-            seoTitle: `${category.name} | Pika`,
-            seoDescription: category.description ?? `${category.name} Pika-ში`,
+            seoTitle: `${category.name} | Luma`,
+            seoDescription: category.description ?? `${category.name} Luma-ში`,
           },
         },
       },
@@ -221,7 +221,7 @@ async function seedCategories() {
           locale: "ka",
           name: "სმარტფონები",
           description: "სმარტფონები ყველა ბრენდისგან — ტელეფონების კატეგორიის ქვეჯგუფი.",
-          seoTitle: "სმარტფონები | Pika",
+          seoTitle: "სმარტფონები | Luma",
           seoDescription: "სმარტფონები Apple, Samsung და სხვა ბრენდებისგან.",
         },
       },
@@ -242,7 +242,7 @@ async function seedCategories() {
           locale: "ka",
           name: "Apple",
           description: "Apple სმარტფონები — იერარქიის მაგალითი: ტელეფონები → სმარტფონები → Apple.",
-          seoTitle: "Apple სმარტფონები | Pika",
+          seoTitle: "Apple სმარტფონები | Luma",
           seoDescription: "iPhone მოდელები ოფიციალური გარანტიით.",
         },
       },
@@ -253,15 +253,15 @@ async function seedCategories() {
 async function seedPromotions() {
   await prisma.promotion.create({
     data: {
-      id: "promo-pika10",
-      code: "PIKA10",
+      id: "promo-luma10",
+      code: "LUMA10",
       type: "percentage",
       value: "10.00",
       isActive: true,
       translations: {
         create: {
           locale: "ka",
-          name: "Pika 10%",
+          name: "Luma 10%",
           description: "10% ფასდაკლება კალათის ჯამზე. დემო კატალოგის პრომოკოდი.",
         },
       },
@@ -485,7 +485,7 @@ async function seedProduct(
           name: product.name,
           shortDescription: product.shortDescription ?? null,
           description,
-          seoTitle: `${product.name} | Pika`,
+          seoTitle: `${product.name} | Luma`,
           seoDescription: (product.shortDescription ?? description).slice(0, 500),
           deliveryEstimate: delivery.estimate,
           warranty,
@@ -628,7 +628,7 @@ async function main() {
   const featuredSortById = new Map(featuredProducts.map((product, index) => [product.id, index]));
   const newArrivalSortById = new Map(newArrivals.map((product, index) => [product.id, index]));
 
-  console.log("Seeding Pika catalogue…");
+  console.log("Seeding Luma catalogue…");
   await pingDatabase();
   await resetCatalogue();
   const brandIds = await seedBrands();

@@ -37,7 +37,7 @@ describe("getEmailConfig", { concurrency: false }, () => {
     withEnv(
       {
         RESEND_API_KEY: "re_test",
-        EMAIL_FROM: "Pika <noreply@pika.ge>",
+        EMAIL_FROM: "Luma <noreply@luma.ge>",
         EMAIL_OVERRIDE_TO: "dev@example.com",
         EMAIL_ALLOW_OVERRIDE: undefined,
         NODE_ENV: "production",
@@ -54,7 +54,7 @@ describe("getEmailConfig", { concurrency: false }, () => {
     withEnv(
       {
         RESEND_API_KEY: "re_test",
-        EMAIL_FROM: "Pika <noreply@pika.ge>",
+        EMAIL_FROM: "Luma <noreply@luma.ge>",
         EMAIL_OVERRIDE_TO: "dev@example.com",
         NODE_ENV: "development",
       },

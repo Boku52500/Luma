@@ -4,7 +4,7 @@ import { listMyAddresses } from "@/server/actions/addresses";
 import { requireCustomer } from "@/server/auth/session";
 
 export const metadata: Metadata = {
-  title: "მისამართები — Pika",
+  title: "მისამართები — Luma",
   description: "შეინახეთ მიწოდების მისამართები.",
 };
 

@@ -14,7 +14,7 @@ export function escapeAttribute(value: string): string {
   return escapeHtml(value);
 }
 
-const BRAND = "#2138dd";
+const BRAND = "#8f1eae";
 const TEXT = "#111827";
 const MUTED = "#6b7280";
 const BORDER = "#e5e7eb";
@@ -37,7 +37,7 @@ export function emailLayout(input: {
       </p>`
     : "";
   const footer = escapeHtml(
-    input.footerNote ?? "კითხვების შემთხვევაში მოგვწერეთ: info@pika.ge · 032 200 00 00",
+    input.footerNote ?? "კითხვების შემთხვევაში მოგვწერეთ: info@luma.ge · 032 200 00 00",
   );
 
   return `<!DOCTYPE html>
@@ -55,7 +55,7 @@ export function emailLayout(input: {
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border:1px solid ${BORDER};border-radius:12px;padding:28px 24px;">
           <tr>
             <td>
-              <p style="margin:0 0 4px;font-size:13px;font-weight:700;letter-spacing:0.08em;color:${BRAND};">PIKA</p>
+              <p style="margin:0 0 4px;font-size:13px;font-weight:700;letter-spacing:0.08em;color:${BRAND};">LUMA</p>
               <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:${TEXT};">${title}</h1>
               ${input.bodyHtml}
               ${cta}

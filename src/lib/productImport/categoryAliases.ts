@@ -2,7 +2,7 @@ import { normalizeCatalogLabel } from "./normalize";
 import { catalogIdentityKey } from "./slug";
 
 /**
- * Explicit approved Excel → Pika category aliases.
+ * Explicit approved Excel → Luma category aliases.
  * Keys are normalized identity keys; values are canonical DB display labels.
  */
 export const IMPORT_CATEGORY_ALIASES: Readonly<Record<string, string>> = {

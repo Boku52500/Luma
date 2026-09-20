@@ -137,16 +137,16 @@ function greeting(firstName: string): string {
 }
 
 export function renderPasswordResetEmail(input: { resetUrl: string }): { subject: string; html: string; text: string } {
-  const subject = "Pika — პაროლის აღდგენა";
+  const subject = "Luma — პაროლის აღდგენა";
   const html = emailLayout({
     title: "პაროლის აღდგენა",
     preheader: "ბმული მოქმედებს 1 საათი.",
     bodyHtml:
-      htmlParagraph("მივიღეთ პაროლის აღდგენის მოთხოვნა თქვენს Pika ანგარიშზე.") +
+      htmlParagraph("მივიღეთ პაროლის აღდგენის მოთხოვნა თქვენს Luma ანგარიშზე.") +
       htmlMuted("ბმული მოქმედებს 1 საათი. თუ ეს მოთხოვნა თქვენ არ გამოგიგზავნიათ, შეგიძლიათ უგულებელყოთ ეს წერილი."),
     cta: { href: input.resetUrl, label: "პაროლის აღდგენა" },
   });
-  const text = `Pika — პაროლის აღდგენა\n\nბმული: ${input.resetUrl}\nმოქმედებს 1 საათი.`;
+  const text = `Luma — პაროლის აღდგენა\n\nბმული: ${input.resetUrl}\nმოქმედებს 1 საათი.`;
   return { subject, html, text };
 }
 

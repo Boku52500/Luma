@@ -33,9 +33,9 @@ export default async function Home() {
         data={{
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "Pika",
+          name: "Luma",
           url: origin,
-          email: "info@pika.ge",
+          email: "info@luma.ge",
           telephone: "+995322000000",
           logo: `${origin}/Logo.png`,
         }}

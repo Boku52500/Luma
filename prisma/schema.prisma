@@ -1,23 +1,853 @@
-// Pika catalogue + commerce foundation.
-//
-// Money is Decimal(12, 2) GEL — never Float. Convert at the data-access
-// boundary (`src/server/money.ts`); the storefront still formats numbers.
-//
-// Translatable copy lives in *Translation tables keyed by Locale (ka/en/ru).
-// Georgian (`ka`) is the required default; do not add nameGe/nameEn/nameRu
-// columns. SEO title/description sit on those translations; indexable +
-// canonical override sit on the entity.
-//
-// Status enums are English machine values. Georgian labels belong in the
-// frontend translation layer.
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model Brand {
+  id                String             @id @default(cuid())
+  slug              String             @unique
+  logoUrl           String?
+  indexable         Boolean            @default(true)
+  canonicalOverride String?
+  sortOrder         Int                @default(0)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  /// R2 object key when logo is storage-managed. Null for external/legacy URLs.
+  logoObjectKey     String?            @unique
+  /// When true, this brand appears in the homepage brands slideshow.
+  showOnHomepage    Boolean            @default(false)
+  /// Sort key for the homepage brands slideshow only.
+  homepageSortOrder Int                @default(0)
+  translations      BrandTranslation[]
+  products          Product[]
+
+  @@index([indexable])
+  @@index([showOnHomepage, homepageSortOrder])
+}
+
+model BrandTranslation {
+  id             String  @id @default(cuid())
+  brandId        String
+  locale         Locale
+  name           String
+  description    String?
+  seoTitle       String?
+  seoDescription String?
+  brand          Brand   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([brandId, locale])
+  @@index([locale])
+  @@index([name])
+}
+
+model Category {
+  id                String                  @id @default(cuid())
+  slug              String                  @unique
+  parentId          String?
+  imageUrl          String?
+  iconKey           String?
+  sortOrder         Int                     @default(0)
+  isActive          Boolean                 @default(true)
+  indexable         Boolean                 @default(true)
+  canonicalOverride String?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  /// When true, this category appears in the single-line storefront navbar.
+  showInMainNav     Boolean                 @default(false)
+  /// Sort key for the main navbar only. Independent of catalogue `sortOrder`.
+  navSortOrder      Int                     @default(0)
+  /// When true, this category appears in the homepage category cards section.
+  showOnHomepage    Boolean                 @default(false)
+  /// Sort key for homepage category cards only.
+  homepageSortOrder Int                     @default(0)
+  parent            Category?               @relation("CategoryTree", fields: [parentId], references: [id])
+  children          Category[]              @relation("CategoryTree")
+  slugRedirects     CategorySlugRedirect[]
+  specifications    CategorySpecification[]
+  translations      CategoryTranslation[]
+  products          Product[]
+
+  @@index([parentId])
+  @@index([isActive, sortOrder])
+  @@index([slug, isActive])
+  @@index([showInMainNav, navSortOrder])
+  @@index([showOnHomepage, homepageSortOrder])
+}
+
+/// * Maps retired Category.slug values to the current canonical Latin slug (308 redirects).
+model CategorySlugRedirect {
+  id         String    @id @default(cuid())
+  oldSlug    String    @unique
+  newSlug    String
+  categoryId String?
+  createdAt  DateTime  @default(now())
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([newSlug])
+  @@index([categoryId])
+}
+
+model CategoryTranslation {
+  id             String   @id @default(cuid())
+  categoryId     String
+  locale         Locale
+  name           String
+  description    String?
+  seoTitle       String?
+  seoDescription String?
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, locale])
+  @@index([locale])
+  @@index([name])
+}
+
+/// Homepage hero banner slides — image-only, admin-managed.
+model HeroSlide {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  /// R2 object key when this slide is storage-managed.
+  objectKey String?  @unique
+  /// Optional redirect. Empty/null = non-navigational banner.
+  href      String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model Product {
+  id                String                   @id @default(cuid())
+  sku               String                   @unique
+  slug              String                   @unique
+  brandId           String
+  categoryId        String
+  price             Decimal                  @db.Decimal(12, 2)
+  previousPrice     Decimal?                 @db.Decimal(12, 2)
+  stockQuantity     Int                      @default(0)
+  isActive          Boolean                  @default(true)
+  isFeatured        Boolean                  @default(false)
+  isNew             Boolean                  @default(false)
+  indexable         Boolean                  @default(true)
+  canonicalOverride String?
+  /// Temporary mock-illustration key until real photography exists.
+  illustrationKey   String?
+  illustrationTone  Int?
+  warrantyMonths    Int?
+  returnDays        Int?
+  /// Denormalized until review aggregation is wired up.
+  ratingAverage     Decimal?                 @db.Decimal(3, 2)
+  reviewCount       Int                      @default(0)
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  /// Position in the homepage featured row. Null when the product is not in that section.
+  featuredSort      Int?
+  /// Position in the homepage new-arrivals row. Null when the product is not in that section.
+  newArrivalSort    Int?
+  /// Storefront merchandising badge (`bestseller` | `top-seller` | `limited` | `custom`).
+  badgeKind         String?
+  badgeLabel        String?
+  /// `in-stock` | `low-stock` | `out-of-stock` — merchandising status, independent of variant sums.
+  stockStatus       String                   @default("in-stock")
+  /// Denormalized filter labels copied from the mock catalogue (e.g. `128GB`, `8GB`).
+  storageLabel      String?
+  ramLabel          String?
+  /// Soft-delete / archive timestamp. Historical OrderItem snapshots stay intact.
+  deletedAt         DateTime?
+  orderItems        OrderItem[]
+  brand             Brand                    @relation(fields: [brandId], references: [id])
+  category          Category                 @relation(fields: [categoryId], references: [id])
+  highlights        ProductHighlight[]
+  images            ProductImage[]
+  installmentTerms  ProductInstallmentTerm[]
+  packageItems      ProductPackageItem[]
+  relations         ProductRelation[]        @relation("ProductRelations")
+  relatedFrom       ProductRelation[]        @relation("RelatedProducts")
+  specifications    ProductSpecification[]
+  translations      ProductTranslation[]
+  variants          ProductVariant[]
+  reviews           Review[]
+  wishlistItems     WishlistItem[]
+
+  @@index([brandId])
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([isActive, isFeatured])
+  @@index([isActive, isFeatured, featuredSort])
+  @@index([isActive, isNew, newArrivalSort])
+  @@index([isActive, categoryId])
+  @@index([isActive, brandId])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@index([isActive, deletedAt])
+}
+
+model ProductTranslation {
+  id               String  @id @default(cuid())
+  productId        String
+  locale           Locale
+  name             String
+  shortDescription String?
+  description      String?
+  seoTitle         String?
+  seoDescription   String?
+  deliveryEstimate String?
+  warranty         String?
+  product          Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, locale])
+  @@index([locale])
+  @@index([name])
+}
+
+model ProductImage {
+  id           String                    @id @default(cuid())
+  productId    String
+  url          String
+  sortOrder    Int                       @default(0)
+  /// R2 object key when this row is storage-managed. Null for legacy/external URLs.
+  objectKey    String?                   @unique
+  product      Product                   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  translations ProductImageTranslation[]
+
+  @@index([productId, sortOrder])
+}
+
+model ProductImageTranslation {
+  id      String       @id @default(cuid())
+  imageId String
+  locale  Locale
+  alt     String
+  image   ProductImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@unique([imageId, locale])
+}
+
+model ProductHighlight {
+  id           String                        @id @default(cuid())
+  productId    String
+  sortOrder    Int                           @default(0)
+  product      Product                       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  translations ProductHighlightTranslation[]
+
+  @@index([productId, sortOrder])
+}
+
+model ProductHighlightTranslation {
+  id          String           @id @default(cuid())
+  highlightId String
+  locale      Locale
+  text        String
+  highlight   ProductHighlight @relation(fields: [highlightId], references: [id], onDelete: Cascade)
+
+  @@unique([highlightId, locale])
+}
+
+model ProductPackageItem {
+  id           String                          @id @default(cuid())
+  productId    String
+  sortOrder    Int                             @default(0)
+  product      Product                         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  translations ProductPackageItemTranslation[]
+
+  @@index([productId, sortOrder])
+}
+
+model ProductPackageItemTranslation {
+  id     String             @id @default(cuid())
+  itemId String
+  locale Locale
+  text   String
+  item   ProductPackageItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, locale])
+}
+
+model ProductInstallmentTerm {
+  id           String  @id @default(cuid())
+  productId    String
+  months       Int
+  monthlyPrice Decimal @db.Decimal(12, 2)
+  product      Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, months])
+  @@index([productId])
+}
+
+model ProductRelation {
+  id               String  @id @default(cuid())
+  productId        String
+  relatedProductId String
+  sortOrder        Int     @default(0)
+  product          Product @relation("ProductRelations", fields: [productId], references: [id], onDelete: Cascade)
+  relatedProduct   Product @relation("RelatedProducts", fields: [relatedProductId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, relatedProductId])
+  @@index([productId, sortOrder])
+}
+
+/// Reusable variant axis (color, storage, RAM, size…) — not phone-specific.
+model VariantAttribute {
+  id           String                        @id @default(cuid())
+  slug         String                        @unique
+  sortOrder    Int                           @default(0)
+  options      VariantAttributeOption[]
+  translations VariantAttributeTranslation[]
+}
+
+model VariantAttributeTranslation {
+  id          String           @id @default(cuid())
+  attributeId String
+  locale      Locale
+  name        String
+  attribute   VariantAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@unique([attributeId, locale])
+}
+
+model VariantAttributeOption {
+  id           String                              @id @default(cuid())
+  attributeId  String
+  slug         String
+  swatch       String?
+  sortOrder    Int                                 @default(0)
+  variants     ProductVariantOption[]
+  attribute    VariantAttribute                    @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  translations VariantAttributeOptionTranslation[]
+
+  @@unique([attributeId, slug])
+  @@index([attributeId, sortOrder])
+}
+
+model VariantAttributeOptionTranslation {
+  id       String                 @id @default(cuid())
+  optionId String
+  locale   Locale
+  name     String
+  option   VariantAttributeOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([optionId, locale])
+}
+
+model ProductVariant {
+  id            String                 @id @default(cuid())
+  productId     String
+  sku           String                 @unique
+  priceOverride Decimal?               @db.Decimal(12, 2)
+  stockQuantity Int                    @default(0)
+  isActive      Boolean                @default(true)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  orderItems    OrderItem[]
+  product       Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
+  options       ProductVariantOption[]
+
+  @@index([productId, isActive])
+}
+
+model ProductVariantOption {
+  id        String                 @id @default(cuid())
+  variantId String
+  optionId  String
+  option    VariantAttributeOption @relation(fields: [optionId], references: [id])
+  variant   ProductVariant         @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, optionId])
+  @@index([optionId])
+}
+
+model SpecificationGroup {
+  id           String                          @id @default(cuid())
+  slug         String                          @unique
+  sortOrder    Int                             @default(0)
+  definitions  SpecificationDefinition[]
+  translations SpecificationGroupTranslation[]
+}
+
+model SpecificationGroupTranslation {
+  id      String             @id @default(cuid())
+  groupId String
+  locale  Locale
+  name    String
+  group   SpecificationGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, locale])
+}
+
+model SpecificationDefinition {
+  id            String                               @id @default(cuid())
+  groupId       String
+  slug          String
+  unit          String?
+  isFilterable  Boolean                              @default(false)
+  sortOrder     Int                                  @default(0)
+  categories    CategorySpecification[]
+  values        ProductSpecification[]
+  group         SpecificationGroup                   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  translations  SpecificationDefinitionTranslation[]
+  libraryValues SpecificationValue[]
+
+  @@unique([groupId, slug])
+  @@index([isFilterable])
+}
+
+model SpecificationDefinitionTranslation {
+  id              String                  @id @default(cuid())
+  specificationId String
+  locale          Locale
+  name            String
+  specification   SpecificationDefinition @relation(fields: [specificationId], references: [id], onDelete: Cascade)
+
+  @@unique([specificationId, locale])
+}
+
+model CategorySpecification {
+  id              String                  @id @default(cuid())
+  categoryId      String
+  specificationId String
+  sortOrder       Int                     @default(0)
+  category        Category                @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  specification   SpecificationDefinition @relation(fields: [specificationId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, specificationId])
+  @@index([categoryId, sortOrder])
+}
+
+model SpecificationValue {
+  id              String                          @id @default(cuid())
+  specificationId String
+  slug            String
+  sortOrder       Int                             @default(0)
+  usages          ProductSpecification[]
+  specification   SpecificationDefinition         @relation(fields: [specificationId], references: [id], onDelete: Cascade)
+  translations    SpecificationValueTranslation[]
+
+  @@unique([specificationId, slug])
+  @@index([specificationId, sortOrder])
+}
+
+model SpecificationValueTranslation {
+  id      String             @id @default(cuid())
+  valueId String
+  locale  Locale
+  name    String
+  value   SpecificationValue @relation(fields: [valueId], references: [id], onDelete: Cascade)
+
+  @@unique([valueId, locale])
+}
+
+model ProductSpecification {
+  id              String                  @id @default(cuid())
+  productId       String
+  specificationId String
+  value           String
+  /// Optional parsed number for range/numeric filters (RAM GB, screen inches…).
+  numericValue    Decimal?                @db.Decimal(12, 4)
+  /// Optional link to the reusable library value. Display still uses `value`.
+  valueId         String?
+  product         Product                 @relation(fields: [productId], references: [id], onDelete: Cascade)
+  specification   SpecificationDefinition @relation(fields: [specificationId], references: [id])
+  valueOption     SpecificationValue?     @relation(fields: [valueId], references: [id], onDelete: Restrict)
+
+  @@unique([productId, specificationId])
+  @@index([specificationId, value])
+  @@index([specificationId, numericValue])
+  @@index([valueId])
+}
+
+/// Storefront customer. Passwords are bcrypt hashes only — never plaintext.
+/// `role` is the source of truth for admin access — never infer it from the client.
+model Customer {
+  id                  String               @id @default(cuid())
+  firstName           String
+  lastName            String
+  email               String               @unique
+  phone               String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  passwordHash        String
+  emailVerified       DateTime?
+  role                CustomerRole         @default(CUSTOMER)
+  addresses           Address?
+  emailDeliveries     EmailDelivery[]
+  orders              Order[]
+  passwordResetTokens PasswordResetToken[]
+  paymentRefunds      PaymentRefund[]
+  providerActions     ProviderAction[]
+  reviews             Review[]
+  savedPaymentMethods SavedPaymentMethod[]
+  wishlistItems       WishlistItem[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([role])
+}
+
+/// Hashed one-time tokens. Raw tokens are never stored. Email delivery is not wired yet.
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  customerId String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  usedAt     DateTime?
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([expiresAt])
+}
+
+/// Distributed rate-limit buckets for login/register/checkout (see RATE_LIMIT_STORE).
+model RateLimitBucket {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
+
+model Address {
+  id             String   @id @default(cuid())
+  customerId     String   @unique(map: "Address_one_default_per_customer", where: raw("(\"isDefault\" = true)"))
+  label          String?
+  city           String
+  street         String
+  building       String?
+  apartment      String?
+  entrance       String?
+  floor          String?
+  additionalInfo String?
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  customer       Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([customerId, isDefault])
+}
+
+model Order {
+  id                     String               @id @default(cuid())
+  orderNumber            String               @unique
+  customerId             String?
+  customerFirstName      String
+  customerLastName       String
+  customerEmail          String
+  customerPhone          String
+  city                   String
+  street                 String
+  building               String?
+  apartment              String?
+  entrance               String?
+  floor                  String?
+  additionalInfo         String?
+  deliveryMethod         DeliveryMethod
+  paymentMethod          PaymentMethod
+  paymentStatus          PaymentStatus        @default(unpaid)
+  orderStatus            OrderStatus          @default(pending)
+  subtotal               Decimal              @db.Decimal(12, 2)
+  discount               Decimal              @default(0) @db.Decimal(12, 2)
+  deliveryFee            Decimal              @default(0) @db.Decimal(12, 2)
+  total                  Decimal              @db.Decimal(12, 2)
+  promoCode              String?
+  installmentMonths      Int?
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  checkoutIdempotencyKey String?              @unique
+  inventoryState         InventoryHoldState   @default(committed)
+  emailDeliveries        EmailDelivery[]
+  customer               Customer?            @relation(fields: [customerId], references: [id])
+  items                  OrderItem[]
+  payments               Payment[]
+  promoRedemption        PromotionRedemption?
+  providerActions        ProviderAction[]
+
+  @@index([customerId, createdAt])
+  @@index([orderStatus])
+  @@index([paymentStatus])
+  @@index([customerEmail])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id               String          @id @default(cuid())
+  orderId          String
+  productId        String?
+  productName      String
+  sku              String
+  /// Snapshot of selected axes, e.g. [{ attributeSlug, attributeLabel, optionSlug, optionLabel }].
+  selectedVariants Json
+  unitPrice        Decimal         @db.Decimal(12, 2)
+  quantity         Int
+  lineTotal        Decimal         @db.Decimal(12, 2)
+  variantId        String?
+  order            Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product          Product?        @relation(fields: [productId], references: [id])
+  variant          ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([variantId])
+}
+
+/// One provider payment attempt for a Luma Order. Card charges live here, not on Order.
+model Payment {
+  id                    String               @id @default(cuid())
+  orderId               String
+  provider              PaymentProvider      @default(bog)
+  providerOrderId       String?
+  idempotencyKey        String               @unique
+  status                PaymentAttemptStatus @default(pending)
+  amount                Decimal              @db.Decimal(12, 2)
+  currency              String               @default("GEL")
+  method                String?
+  transactionId         String?
+  authCode              String?
+  responseCode          String?
+  responseDescription   String?
+  providerStatus        String?
+  redirectUrl           String?
+  rejectReason          String?
+  lastError             String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  completedAt           DateTime?
+  /// Cumulative refunded amount from BOG Payment Details `purchase_units.refund_amount`.
+  providerRefundAmount  Decimal?             @db.Decimal(12, 2)
+  /// BOG `capture` on the ecommerce order: `automatic` or `manual`.
+  captureMode           String               @default("automatic")
+  authorizedAmount      Decimal?             @db.Decimal(12, 2)
+  capturedAmount        Decimal?             @db.Decimal(12, 2)
+  parentProviderOrderId String?
+  savedPaymentMethodId  String?
+  paymentOption         String?
+  savedCardType         String?
+  loanMonth             Int?
+  loanDiscountCode      String?
+  splitStatus           String?
+  splitSnapshot         Json?
+  /// Non-secret provider session payload (e.g. Apple Pay `result`). Never a wallet token.
+  providerSession       Json?
+  /// Masked payer identifier from BOG (`548888xxxxxx9893`). Never a full PAN.
+  payerIdentifier       String?
+  cardExpiryDate        String?
+  emailDeliveries       EmailDelivery[]
+  order                 Order                @relation(fields: [orderId], references: [id])
+  savedPaymentMethod    SavedPaymentMethod?  @relation("SavedCardCharges", fields: [savedPaymentMethodId], references: [id])
+  refunds               PaymentRefund[]
+  providerActions       ProviderAction[]
+  enrolledSavedMethods  SavedPaymentMethod[] @relation("SavedCardEnrollment")
+
+  @@unique([provider, providerOrderId])
+  @@index([orderId, createdAt])
+  @@index([providerOrderId])
+  @@index([status])
+  @@index([savedPaymentMethodId])
+  @@index([parentProviderOrderId])
+}
+
+/// Safe BOG saved-card reference. Never stores PAN, CVV, or wallet tokens.
+model SavedPaymentMethod {
+  id                  String           @id @default(cuid())
+  customerId          String
+  provider            PaymentProvider  @default(bog)
+  consent             SavedCardConsent
+  parentOrderId       String
+  maskedPan           String?
+  cardType            String?
+  cardExpiry          String?
+  enrollmentPaymentId String?
+  deletedAt           DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  payments            Payment[]        @relation("SavedCardCharges")
+  providerActions     ProviderAction[]
+  customer            Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  enrollmentPayment   Payment?         @relation("SavedCardEnrollment", fields: [enrollmentPaymentId], references: [id])
+
+  @@unique([provider, parentOrderId])
+  @@index([customerId, deletedAt])
+}
+
+/// Safe audit row for BOG provider actions. No wallet/card secrets.
+model ProviderAction {
+  id                   String               @id @default(cuid())
+  type                 ProviderActionType
+  status               ProviderActionStatus @default(requested)
+  orderId              String?
+  paymentId            String?
+  savedPaymentMethodId String?
+  customerId           String?
+  providerActionId     String?
+  idempotencyKey       String               @unique
+  amount               Decimal?             @db.Decimal(12, 2)
+  normalizedStatus     String?
+  errorCategory        String?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  completedAt          DateTime?
+  customer             Customer?            @relation(fields: [customerId], references: [id])
+  order                Order?               @relation(fields: [orderId], references: [id])
+  payment              Payment?             @relation(fields: [paymentId], references: [id])
+  savedPaymentMethod   SavedPaymentMethod?  @relation(fields: [savedPaymentMethodId], references: [id])
+
+  @@index([paymentId, createdAt])
+  @@index([orderId, createdAt])
+  @@index([type, createdAt])
+  @@index([providerActionId])
+}
+
+/// Admin/system-controlled split destinations. Customers never submit IBANs.
+model BogSplitRecipient {
+  id          String   @id @default(cuid())
+  iban        String
+  amount      Decimal? @db.Decimal(12, 2)
+  percent     Int?
+  description String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+/// One BOG refund request against a Payment. Partial refunds create multiple rows.
+model PaymentRefund {
+  id                 String              @id @default(cuid())
+  paymentId          String
+  provider           PaymentProvider     @default(bog)
+  providerActionId   String?
+  idempotencyKey     String              @unique
+  amount             Decimal             @db.Decimal(12, 2)
+  status             PaymentRefundStatus @default(requested)
+  providerStatus     String?
+  providerMessage    String?
+  adminNote          String?
+  lastError          String?
+  requestedByAdminId String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  completedAt        DateTime?
+  emailDeliveries    EmailDelivery[]
+  payment            Payment             @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  requestedByAdmin   Customer?           @relation(fields: [requestedByAdminId], references: [id])
+
+  @@unique([provider, providerActionId])
+  @@index([paymentId, createdAt])
+  @@index([status])
+  @@index([requestedByAdminId])
+}
+
+/// One logical transactional email (idempotent by eventKey). Bodies are not stored.
+model EmailDelivery {
+  id                String              @id @default(cuid())
+  eventKey          String              @unique
+  type              EmailEventType
+  status            EmailDeliveryStatus @default(pending)
+  recipient         String
+  recipientDomain   String?
+  subject           String
+  orderId           String?
+  paymentId         String?
+  refundId          String?
+  customerId        String?
+  providerMessageId String?
+  attempts          Int                 @default(0)
+  lastError         String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  sentAt            DateTime?
+  customer          Customer?           @relation(fields: [customerId], references: [id])
+  order             Order?              @relation(fields: [orderId], references: [id])
+  payment           Payment?            @relation(fields: [paymentId], references: [id])
+  refund            PaymentRefund?      @relation(fields: [refundId], references: [id])
+
+  @@index([orderId, createdAt])
+  @@index([status])
+  @@index([type])
+  @@index([customerId])
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  customerId String
+  productId  String
+  createdAt  DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([productId])
+}
+
+model Review {
+  id         String       @id @default(cuid())
+  customerId String
+  productId  String
+  rating     Int
+  title      String?
+  body       String
+  status     ReviewStatus @default(pending)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  customer   Customer     @relation(fields: [customerId], references: [id])
+  product    Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([productId, status])
+  @@index([status])
+}
+
+model Promotion {
+  id             String                 @id @default(cuid())
+  code           String?                @unique
+  type           DiscountType
+  value          Decimal                @db.Decimal(12, 2)
+  minOrderAmount Decimal?               @db.Decimal(12, 2)
+  usageLimit     Int?
+  usedCount      Int                    @default(0)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  isActive       Boolean                @default(true)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  redemptions    PromotionRedemption[]
+  translations   PromotionTranslation[]
+
+  @@index([isActive, startsAt, endsAt])
+}
+
+model PromotionTranslation {
+  id          String    @id @default(cuid())
+  promotionId String
+  locale      Locale
+  name        String
+  description String?
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+
+  @@unique([promotionId, locale])
+}
+
+/// One promotion claim per order. Card holds become consumed only on PAID.
+model PromotionRedemption {
+  id          String                    @id @default(cuid())
+  promotionId String
+  orderId     String                    @unique
+  status      PromotionRedemptionStatus @default(held)
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  order       Order                     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  promotion   Promotion                 @relation(fields: [promotionId], references: [id])
+
+  @@index([promotionId, status])
 }
 
 enum Locale {
@@ -38,12 +868,12 @@ enum OrderStatus {
 enum PaymentStatus {
   unpaid
   pending
-  processing
-  authorized
   paid
   failed
   refunded
+  processing
   partially_refunded
+  authorized
 }
 
 enum PaymentProvider {
@@ -53,12 +883,12 @@ enum PaymentProvider {
 enum PaymentAttemptStatus {
   pending
   processing
-  authorized
   paid
   failed
-  voided
   refunded
   partially_refunded
+  authorized
+  voided
 }
 
 enum PaymentRefundStatus {
@@ -150,900 +980,4 @@ enum ReviewStatus {
 enum CustomerRole {
   CUSTOMER
   ADMIN
-}
-
-model Brand {
-  id                 String   @id @default(cuid())
-  slug               String   @unique
-  logoUrl            String?
-  /// R2 object key when logo is storage-managed. Null for external/legacy URLs.
-  logoObjectKey      String?  @unique
-  indexable          Boolean  @default(true)
-  canonicalOverride  String?
-  sortOrder          Int      @default(0)
-  /// When true, this brand appears in the homepage brands slideshow.
-  showOnHomepage     Boolean  @default(false)
-  /// Sort key for the homepage brands slideshow only.
-  homepageSortOrder  Int      @default(0)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  translations BrandTranslation[]
-  products     Product[]
-
-  @@index([indexable])
-  @@index([showOnHomepage, homepageSortOrder])
-}
-
-model BrandTranslation {
-  id             String @id @default(cuid())
-  brandId        String
-  locale         Locale
-  name           String
-  description    String? @db.Text
-  seoTitle       String?
-  seoDescription String? @db.Text
-
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-
-  @@unique([brandId, locale])
-  @@index([locale])
-  @@index([name])
-}
-
-model Category {
-  id                 String   @id @default(cuid())
-  slug               String   @unique
-  parentId           String?
-  imageUrl           String?
-  iconKey            String?
-  sortOrder          Int      @default(0)
-  isActive           Boolean  @default(true)
-  /// When true, this category appears in the single-line storefront navbar.
-  showInMainNav      Boolean  @default(false)
-  /// Sort key for the main navbar only. Independent of catalogue `sortOrder`.
-  navSortOrder       Int      @default(0)
-  /// When true, this category appears in the homepage category cards section.
-  showOnHomepage     Boolean  @default(false)
-  /// Sort key for homepage category cards only.
-  homepageSortOrder  Int      @default(0)
-  indexable          Boolean  @default(true)
-  canonicalOverride  String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
-  children Category[] @relation("CategoryTree")
-
-  translations   CategoryTranslation[]
-  products       Product[]
-  specifications CategorySpecification[]
-  slugRedirects  CategorySlugRedirect[]
-
-  @@index([parentId])
-  @@index([isActive, sortOrder])
-  @@index([slug, isActive])
-  @@index([showInMainNav, navSortOrder])
-  @@index([showOnHomepage, homepageSortOrder])
-}
-
-/** Maps retired Category.slug values to the current canonical Latin slug (308 redirects). */
-model CategorySlugRedirect {
-  id         String   @id @default(cuid())
-  oldSlug    String   @unique
-  newSlug    String
-  categoryId String?
-  createdAt  DateTime @default(now())
-
-  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-
-  @@index([newSlug])
-  @@index([categoryId])
-}
-
-model CategoryTranslation {
-  id             String @id @default(cuid())
-  categoryId     String
-  locale         Locale
-  name           String
-  description    String? @db.Text
-  seoTitle       String?
-  seoDescription String? @db.Text
-
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@unique([categoryId, locale])
-  @@index([locale])
-  @@index([name])
-}
-
-/// Homepage hero banner slides — image-only, admin-managed.
-model HeroSlide {
-  id        String   @id @default(cuid())
-  imageUrl  String
-  /// R2 object key when this slide is storage-managed.
-  objectKey String?  @unique
-  /// Optional redirect. Empty/null = non-navigational banner.
-  href      String?
-  sortOrder Int      @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([isActive, sortOrder])
-}
-
-model Product {
-  id                String   @id @default(cuid())
-  sku               String   @unique
-  slug              String   @unique
-  brandId           String
-  categoryId        String
-  price             Decimal  @db.Decimal(12, 2)
-  previousPrice     Decimal? @db.Decimal(12, 2)
-  stockQuantity     Int      @default(0)
-  isActive          Boolean  @default(true)
-  isFeatured        Boolean  @default(false)
-  isNew             Boolean  @default(false)
-  /// Position in the homepage featured row. Null when the product is not in that section.
-  featuredSort      Int?
-  /// Position in the homepage new-arrivals row. Null when the product is not in that section.
-  newArrivalSort    Int?
-  /// Storefront merchandising badge (`bestseller` | `top-seller` | `limited` | `custom`).
-  badgeKind         String?
-  badgeLabel        String?
-  /// `in-stock` | `low-stock` | `out-of-stock` — merchandising status, independent of variant sums.
-  stockStatus       String   @default("in-stock")
-  /// Denormalized filter labels copied from the mock catalogue (e.g. `128GB`, `8GB`).
-  storageLabel      String?
-  ramLabel          String?
-  indexable         Boolean  @default(true)
-  canonicalOverride String?
-  /// Temporary mock-illustration key until real photography exists.
-  illustrationKey   String?
-  illustrationTone  Int?
-  warrantyMonths    Int?
-  returnDays        Int?
-  /// Denormalized until review aggregation is wired up.
-  ratingAverage     Decimal? @db.Decimal(3, 2)
-  reviewCount       Int      @default(0)
-  /// Soft-delete / archive timestamp. Historical OrderItem snapshots stay intact.
-  deletedAt         DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  brand    Brand    @relation(fields: [brandId], references: [id], onDelete: Restrict)
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-
-  translations      ProductTranslation[]
-  images            ProductImage[]
-  variants          ProductVariant[]
-  specifications    ProductSpecification[]
-  highlights        ProductHighlight[]
-  packageItems      ProductPackageItem[]
-  installmentTerms  ProductInstallmentTerm[]
-  relations         ProductRelation[]        @relation("ProductRelations")
-  relatedFrom       ProductRelation[]        @relation("RelatedProducts")
-  wishlistItems     WishlistItem[]
-  reviews           Review[]
-  orderItems        OrderItem[]
-
-  @@index([brandId])
-  @@index([categoryId])
-  @@index([isActive])
-  @@index([isActive, isFeatured])
-  @@index([isActive, isFeatured, featuredSort])
-  @@index([isActive, isNew, newArrivalSort])
-  @@index([isActive, categoryId])
-  @@index([isActive, brandId])
-  @@index([createdAt])
-  @@index([deletedAt])
-  @@index([isActive, deletedAt])
-}
-
-model ProductTranslation {
-  id                String  @id @default(cuid())
-  productId         String
-  locale            Locale
-  name              String
-  shortDescription  String? @db.Text
-  description       String? @db.Text
-  seoTitle          String?
-  seoDescription    String? @db.Text
-  deliveryEstimate  String?
-  warranty          String?
-
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([productId, locale])
-  @@index([locale])
-  @@index([name])
-}
-
-model ProductImage {
-  id        String @id @default(cuid())
-  productId String
-  url       String
-  /// R2 object key when this row is storage-managed. Null for legacy/external URLs.
-  objectKey String? @unique
-  sortOrder Int     @default(0)
-
-  product      Product                   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  translations ProductImageTranslation[]
-
-  @@index([productId, sortOrder])
-}
-
-model ProductImageTranslation {
-  id      String @id @default(cuid())
-  imageId String
-  locale  Locale
-  alt     String
-
-  image ProductImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
-
-  @@unique([imageId, locale])
-}
-
-model ProductHighlight {
-  id        String @id @default(cuid())
-  productId String
-  sortOrder Int    @default(0)
-
-  product      Product                       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  translations ProductHighlightTranslation[]
-
-  @@index([productId, sortOrder])
-}
-
-model ProductHighlightTranslation {
-  id          String @id @default(cuid())
-  highlightId String
-  locale      Locale
-  text        String @db.Text
-
-  highlight ProductHighlight @relation(fields: [highlightId], references: [id], onDelete: Cascade)
-
-  @@unique([highlightId, locale])
-}
-
-model ProductPackageItem {
-  id        String @id @default(cuid())
-  productId String
-  sortOrder Int    @default(0)
-
-  product      Product                         @relation(fields: [productId], references: [id], onDelete: Cascade)
-  translations ProductPackageItemTranslation[]
-
-  @@index([productId, sortOrder])
-}
-
-model ProductPackageItemTranslation {
-  id      String @id @default(cuid())
-  itemId  String
-  locale  Locale
-  text    String
-
-  item ProductPackageItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
-
-  @@unique([itemId, locale])
-}
-
-model ProductInstallmentTerm {
-  id           String  @id @default(cuid())
-  productId    String
-  months       Int
-  monthlyPrice Decimal @db.Decimal(12, 2)
-
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([productId, months])
-  @@index([productId])
-}
-
-model ProductRelation {
-  id               String @id @default(cuid())
-  productId        String
-  relatedProductId String
-  sortOrder        Int    @default(0)
-
-  product        Product @relation("ProductRelations", fields: [productId], references: [id], onDelete: Cascade)
-  relatedProduct Product @relation("RelatedProducts", fields: [relatedProductId], references: [id], onDelete: Cascade)
-
-  @@unique([productId, relatedProductId])
-  @@index([productId, sortOrder])
-}
-
-/// Reusable variant axis (color, storage, RAM, size…) — not phone-specific.
-model VariantAttribute {
-  id        String @id @default(cuid())
-  slug      String @unique
-  sortOrder Int    @default(0)
-
-  translations VariantAttributeTranslation[]
-  options      VariantAttributeOption[]
-}
-
-model VariantAttributeTranslation {
-  id          String @id @default(cuid())
-  attributeId String
-  locale      Locale
-  name        String
-
-  attribute VariantAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-
-  @@unique([attributeId, locale])
-}
-
-model VariantAttributeOption {
-  id          String  @id @default(cuid())
-  attributeId String
-  slug        String
-  swatch      String?
-  sortOrder   Int     @default(0)
-
-  attribute    VariantAttribute                    @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-  translations VariantAttributeOptionTranslation[]
-  variants     ProductVariantOption[]
-
-  @@unique([attributeId, slug])
-  @@index([attributeId, sortOrder])
-}
-
-model VariantAttributeOptionTranslation {
-  id       String @id @default(cuid())
-  optionId String
-  locale   Locale
-  name     String
-
-  option VariantAttributeOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
-
-  @@unique([optionId, locale])
-}
-
-model ProductVariant {
-  id            String   @id @default(cuid())
-  productId     String
-  sku           String   @unique
-  priceOverride Decimal? @db.Decimal(12, 2)
-  stockQuantity Int      @default(0)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  product Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
-  options ProductVariantOption[]
-  orderItems OrderItem[]
-
-  @@index([productId, isActive])
-}
-
-model ProductVariantOption {
-  id         String @id @default(cuid())
-  variantId  String
-  optionId   String
-
-  variant ProductVariant         @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  option  VariantAttributeOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
-
-  @@unique([variantId, optionId])
-  @@index([optionId])
-}
-
-model SpecificationGroup {
-  id        String @id @default(cuid())
-  slug      String @unique
-  sortOrder Int    @default(0)
-
-  translations SpecificationGroupTranslation[]
-  definitions  SpecificationDefinition[]
-}
-
-model SpecificationGroupTranslation {
-  id      String @id @default(cuid())
-  groupId String
-  locale  Locale
-  name    String
-
-  group SpecificationGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-  @@unique([groupId, locale])
-}
-
-model SpecificationDefinition {
-  id           String  @id @default(cuid())
-  groupId      String
-  slug         String
-  unit         String?
-  isFilterable Boolean @default(false)
-  sortOrder    Int     @default(0)
-
-  group        SpecificationGroup                   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  translations SpecificationDefinitionTranslation[]
-  values       ProductSpecification[]
-  libraryValues SpecificationValue[]
-  categories   CategorySpecification[]
-
-  @@unique([groupId, slug])
-  @@index([isFilterable])
-}
-
-model SpecificationDefinitionTranslation {
-  id             String @id @default(cuid())
-  specificationId String
-  locale         Locale
-  name           String
-
-  specification SpecificationDefinition @relation(fields: [specificationId], references: [id], onDelete: Cascade)
-
-  @@unique([specificationId, locale])
-}
-
-model CategorySpecification {
-  id              String @id @default(cuid())
-  categoryId      String
-  specificationId String
-  sortOrder       Int    @default(0)
-
-  category      Category                @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  specification SpecificationDefinition @relation(fields: [specificationId], references: [id], onDelete: Cascade)
-
-  @@unique([categoryId, specificationId])
-  @@index([categoryId, sortOrder])
-}
-
-model SpecificationValue {
-  id              String @id @default(cuid())
-  specificationId String
-  slug            String
-  sortOrder       Int    @default(0)
-
-  specification SpecificationDefinition             @relation(fields: [specificationId], references: [id], onDelete: Cascade)
-  translations  SpecificationValueTranslation[]
-  usages        ProductSpecification[]
-
-  @@unique([specificationId, slug])
-  @@index([specificationId, sortOrder])
-}
-
-model SpecificationValueTranslation {
-  id      String @id @default(cuid())
-  valueId String
-  locale  Locale
-  name    String
-
-  value SpecificationValue @relation(fields: [valueId], references: [id], onDelete: Cascade)
-
-  @@unique([valueId, locale])
-}
-
-model ProductSpecification {
-  id              String   @id @default(cuid())
-  productId       String
-  specificationId String
-  value           String
-  /// Optional link to the reusable library value. Display still uses `value`.
-  valueId         String?
-  /// Optional parsed number for range/numeric filters (RAM GB, screen inches…).
-  numericValue    Decimal? @db.Decimal(12, 4)
-
-  product       Product                 @relation(fields: [productId], references: [id], onDelete: Cascade)
-  specification SpecificationDefinition @relation(fields: [specificationId], references: [id], onDelete: Restrict)
-  valueOption   SpecificationValue?     @relation(fields: [valueId], references: [id], onDelete: Restrict)
-
-  @@unique([productId, specificationId])
-  @@index([specificationId, value])
-  @@index([specificationId, numericValue])
-  @@index([valueId])
-}
-
-/// Storefront customer. Passwords are bcrypt hashes only — never plaintext.
-/// `role` is the source of truth for admin access — never infer it from the client.
-model Customer {
-  id            String       @id @default(cuid())
-  firstName     String
-  lastName      String
-  email         String       @unique
-  phone         String?
-  passwordHash  String
-  emailVerified DateTime?
-  role          CustomerRole @default(CUSTOMER)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  addresses           Address[]
-  orders              Order[]
-  wishlistItems       WishlistItem[]
-  reviews             Review[]
-  passwordResetTokens PasswordResetToken[]
-  paymentRefunds      PaymentRefund[]
-  emailDeliveries     EmailDelivery[]
-  savedPaymentMethods SavedPaymentMethod[]
-  providerActions     ProviderAction[]
-
-  @@index([email])
-  @@index([phone])
-  @@index([role])
-}
-
-/// Hashed one-time tokens. Raw tokens are never stored. Email delivery is not wired yet.
-model PasswordResetToken {
-  id         String    @id @default(cuid())
-  customerId String
-  tokenHash  String    @unique
-  expiresAt  DateTime
-  usedAt     DateTime?
-  createdAt  DateTime  @default(now())
-
-  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-
-  @@index([customerId])
-  @@index([expiresAt])
-}
-
-/// Distributed rate-limit buckets for login/register/checkout (see RATE_LIMIT_STORE).
-model RateLimitBucket {
-  key     String   @id
-  count   Int
-  resetAt DateTime
-
-  @@index([resetAt])
-}
-
-model Address {
-  id             String  @id @default(cuid())
-  customerId     String
-  label          String?
-  city           String
-  street         String
-  building       String?
-  apartment      String?
-  entrance       String?
-  floor          String?
-  additionalInfo String? @db.Text
-  isDefault      Boolean @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-
-  @@index([customerId])
-  @@index([customerId, isDefault])
-}
-
-model Order {
-  id     String @id @default(cuid())
-  orderNumber String @unique
-
-  customerId String?
-  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-
-  customerFirstName String
-  customerLastName  String
-  customerEmail     String
-  customerPhone     String
-
-  city           String
-  street         String
-  building       String?
-  apartment      String?
-  entrance       String?
-  floor          String?
-  additionalInfo String? @db.Text
-
-  deliveryMethod DeliveryMethod
-  paymentMethod  PaymentMethod
-  paymentStatus  PaymentStatus @default(unpaid)
-  orderStatus    OrderStatus   @default(pending)
-
-  subtotal    Decimal @db.Decimal(12, 2)
-  discount    Decimal @db.Decimal(12, 2) @default(0)
-  deliveryFee Decimal @db.Decimal(12, 2) @default(0)
-  total       Decimal @db.Decimal(12, 2)
-
-  promoCode         String?
-  installmentMonths Int?
-  checkoutIdempotencyKey String? @unique
-  inventoryState    InventoryHoldState @default(committed)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  items             OrderItem[]
-  payments          Payment[]
-  emailDeliveries   EmailDelivery[]
-  promoRedemption   PromotionRedemption?
-  providerActions   ProviderAction[]
-
-  @@index([customerId, createdAt])
-  @@index([orderStatus])
-  @@index([paymentStatus])
-  @@index([customerEmail])
-  @@index([createdAt])
-}
-
-model OrderItem {
-  id        String @id @default(cuid())
-  orderId   String
-  productId String?
-  variantId String?
-
-  productName String
-  sku         String
-  /// Snapshot of selected axes, e.g. [{ attributeSlug, attributeLabel, optionSlug, optionLabel }].
-  selectedVariants Json
-  unitPrice   Decimal @db.Decimal(12, 2)
-  quantity    Int
-  lineTotal   Decimal @db.Decimal(12, 2)
-
-  order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product?       @relation(fields: [productId], references: [id], onDelete: SetNull)
-  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
-
-  @@index([orderId])
-  @@index([productId])
-  @@index([variantId])
-}
-
-/// One provider payment attempt for a Pika Order. Card charges live here, not on Order.
-model Payment {
-  id                   String                @id @default(cuid())
-  orderId              String
-  provider             PaymentProvider       @default(bog)
-  providerOrderId      String?
-  idempotencyKey       String                @unique
-  status               PaymentAttemptStatus  @default(pending)
-  amount               Decimal               @db.Decimal(12, 2)
-  currency             String                @default("GEL")
-  method               String?
-  transactionId        String?
-  authCode             String?
-  responseCode         String?
-  responseDescription  String?
-  providerStatus       String?
-  redirectUrl          String?
-  rejectReason         String?
-  lastError            String?
-  /// Cumulative refunded amount from BOG Payment Details `purchase_units.refund_amount`.
-  providerRefundAmount Decimal?              @db.Decimal(12, 2)
-  /// BOG `capture` on the ecommerce order: `automatic` or `manual`.
-  captureMode          String                @default("automatic")
-  authorizedAmount     Decimal?              @db.Decimal(12, 2)
-  capturedAmount       Decimal?              @db.Decimal(12, 2)
-  parentProviderOrderId String?
-  savedPaymentMethodId String?
-  paymentOption        String?
-  savedCardType        String?
-  loanMonth            Int?
-  loanDiscountCode     String?
-  splitStatus          String?
-  splitSnapshot        Json?
-  /// Non-secret provider session payload (e.g. Apple Pay `result`). Never a wallet token.
-  providerSession      Json?
-  /// Masked payer identifier from BOG (`548888xxxxxx9893`). Never a full PAN.
-  payerIdentifier      String?
-  cardExpiryDate       String?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  completedAt          DateTime?
-
-  order                Order                @relation(fields: [orderId], references: [id], onDelete: Restrict)
-  refunds              PaymentRefund[]
-  emailDeliveries      EmailDelivery[]
-  savedPaymentMethod   SavedPaymentMethod?  @relation("SavedCardCharges", fields: [savedPaymentMethodId], references: [id], onDelete: SetNull)
-  enrolledSavedMethods SavedPaymentMethod[] @relation("SavedCardEnrollment")
-  providerActions      ProviderAction[]
-
-  @@unique([provider, providerOrderId])
-  @@index([orderId, createdAt])
-  @@index([providerOrderId])
-  @@index([status])
-  @@index([savedPaymentMethodId])
-  @@index([parentProviderOrderId])
-}
-
-/// Safe BOG saved-card reference. Never stores PAN, CVV, or wallet tokens.
-model SavedPaymentMethod {
-  id                    String           @id @default(cuid())
-  customerId            String
-  provider              PaymentProvider  @default(bog)
-  consent               SavedCardConsent
-  parentOrderId         String
-  maskedPan             String?
-  cardType              String?
-  cardExpiry            String?
-  enrollmentPaymentId   String?
-  deletedAt             DateTime?
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
-
-  customer          Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  enrollmentPayment Payment? @relation("SavedCardEnrollment", fields: [enrollmentPaymentId], references: [id], onDelete: SetNull)
-  payments          Payment[] @relation("SavedCardCharges")
-  providerActions   ProviderAction[]
-
-  @@unique([provider, parentOrderId])
-  @@index([customerId, deletedAt])
-}
-
-/// Safe audit row for BOG provider actions. No wallet/card secrets.
-model ProviderAction {
-  id                   String               @id @default(cuid())
-  type                 ProviderActionType
-  status               ProviderActionStatus @default(requested)
-  orderId              String?
-  paymentId            String?
-  savedPaymentMethodId String?
-  customerId           String?
-  providerActionId     String?
-  idempotencyKey       String               @unique
-  amount               Decimal?             @db.Decimal(12, 2)
-  normalizedStatus     String?
-  errorCategory        String?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-  completedAt          DateTime?
-
-  order              Order?              @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  payment            Payment?            @relation(fields: [paymentId], references: [id], onDelete: SetNull)
-  savedPaymentMethod SavedPaymentMethod? @relation(fields: [savedPaymentMethodId], references: [id], onDelete: SetNull)
-  customer           Customer?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
-
-  @@index([paymentId, createdAt])
-  @@index([orderId, createdAt])
-  @@index([type, createdAt])
-  @@index([providerActionId])
-}
-
-/// Admin/system-controlled split destinations. Customers never submit IBANs.
-model BogSplitRecipient {
-  id          String   @id @default(cuid())
-  iban        String
-  amount      Decimal? @db.Decimal(12, 2)
-  percent     Int?
-  description String?
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([isActive, sortOrder])
-}
-
-/// One BOG refund request against a Payment. Partial refunds create multiple rows.
-model PaymentRefund {
-  id                 String              @id @default(cuid())
-  paymentId          String
-  provider           PaymentProvider     @default(bog)
-  providerActionId   String?
-  idempotencyKey     String              @unique
-  amount             Decimal             @db.Decimal(12, 2)
-  status             PaymentRefundStatus @default(requested)
-  providerStatus     String?
-  providerMessage    String?
-  adminNote          String?             @db.Text
-  lastError          String?
-  requestedByAdminId String?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  completedAt        DateTime?
-
-  payment          Payment          @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  requestedByAdmin Customer?        @relation(fields: [requestedByAdminId], references: [id], onDelete: SetNull)
-  emailDeliveries  EmailDelivery[]
-
-  @@unique([provider, providerActionId])
-  @@index([paymentId, createdAt])
-  @@index([status])
-  @@index([requestedByAdminId])
-}
-
-/// One logical transactional email (idempotent by eventKey). Bodies are not stored.
-model EmailDelivery {
-  id                String              @id @default(cuid())
-  eventKey          String              @unique
-  type              EmailEventType
-  status            EmailDeliveryStatus @default(pending)
-  recipient         String
-  recipientDomain   String?
-  subject           String
-  orderId           String?
-  paymentId         String?
-  refundId          String?
-  customerId        String?
-  providerMessageId String?
-  attempts          Int                 @default(0)
-  lastError         String?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  sentAt            DateTime?
-
-  order    Order?         @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  payment  Payment?       @relation(fields: [paymentId], references: [id], onDelete: SetNull)
-  refund   PaymentRefund? @relation(fields: [refundId], references: [id], onDelete: SetNull)
-  customer Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
-
-  @@index([orderId, createdAt])
-  @@index([status])
-  @@index([type])
-  @@index([customerId])
-}
-
-model WishlistItem {
-  id         String   @id @default(cuid())
-  customerId String
-  productId  String
-  createdAt  DateTime @default(now())
-
-  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([customerId, productId])
-  @@index([productId])
-}
-
-model Review {
-  id         String       @id @default(cuid())
-  customerId String
-  productId  String
-  rating     Int
-  title      String?
-  body       String       @db.Text
-  status     ReviewStatus @default(pending)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-
-  customer Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([customerId, productId])
-  @@index([productId, status])
-  @@index([status])
-}
-
-model Promotion {
-  id             String       @id @default(cuid())
-  code           String?      @unique
-  type           DiscountType
-  value          Decimal      @db.Decimal(12, 2)
-  minOrderAmount Decimal?     @db.Decimal(12, 2)
-  usageLimit     Int?
-  usedCount      Int          @default(0)
-  startsAt       DateTime?
-  endsAt         DateTime?
-  isActive       Boolean      @default(true)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-
-  translations PromotionTranslation[]
-  redemptions  PromotionRedemption[]
-
-  @@index([isActive, startsAt, endsAt])
-}
-
-model PromotionTranslation {
-  id          String @id @default(cuid())
-  promotionId String
-  locale      Locale
-  name        String
-  description String? @db.Text
-
-  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
-
-  @@unique([promotionId, locale])
-}
-
-/// One promotion claim per order. Card holds become consumed only on PAID.
-model PromotionRedemption {
-  id          String                     @id @default(cuid())
-  promotionId String
-  orderId     String                     @unique
-  status      PromotionRedemptionStatus  @default(held)
-  createdAt   DateTime                   @default(now())
-  updatedAt   DateTime                   @updatedAt
-
-  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Restrict)
-  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  @@index([promotionId, status])
 }

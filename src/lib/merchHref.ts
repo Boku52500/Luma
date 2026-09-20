@@ -1,6 +1,6 @@
 /**
  * Safe storefront redirect for hero banners and similar merchandising links.
- * Allows relative Pika paths and http(s) absolute URLs. Blocks javascript: etc.
+ * Allows relative Luma paths and http(s) absolute URLs. Blocks javascript: etc.
  */
 export function normalizeMerchHref(raw: string | null | undefined): string | null {
   const value = raw?.trim() ?? "";

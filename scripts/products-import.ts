@@ -116,7 +116,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Pika product import${dryRun ? " (DRY RUN — no DB writes)" : ""}`);
+  console.log(`Luma product import${dryRun ? " (DRY RUN — no DB writes)" : ""}`);
   console.log(`  File: ${filePath}`);
 
   let context;

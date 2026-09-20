@@ -16,7 +16,7 @@ export interface HeroSlide {
 export const heroSlides: HeroSlide[] = [
   {
     id: "slide-brand",
-    brand: "PIKA",
+    brand: "LUMA",
     title: "სანდო ტექნიკის მაღაზია",
     description: "ორიგინალი პროდუქცია და ოფიციალური გარანტია",
     href: "/category/phones",

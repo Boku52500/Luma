@@ -20,7 +20,7 @@ import { WISHLIST_STORAGE_VERSION, parseWishlistSnapshot, toWishlistSnapshot } f
 
 export type { WishlistSnapshot } from "@/lib/productSnapshots";
 
-const STORAGE_KEY = "pika:wishlist";
+const STORAGE_KEY = "luma:wishlist";
 const listeners = new Set<() => void>();
 const EMPTY: WishlistSnapshot[] = [];
 

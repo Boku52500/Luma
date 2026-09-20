@@ -25,7 +25,7 @@ const mockCalculator = {
 
 const orderResult = {
   providerOrderId: "bog-order-1",
-  orderNumber: "PIKA-1",
+  orderNumber: "LUMA-1",
   redirectUrl: "https://example.test/success",
 };
 
@@ -161,7 +161,7 @@ describe("openBogInstallmentCalculator", () => {
     assert.deepEqual(finished, {
       cancelled: false,
       providerOrderId: "bog-order-1",
-      orderNumber: "PIKA-1",
+      orderNumber: "LUMA-1",
       redirectUrl: "https://example.test/success",
       sdkRedirectUrl: "https://example.test/complete",
     });

@@ -6,8 +6,8 @@ import { ResetPasswordPageClient } from "@/components/auth/ResetPasswordPageClie
 import { noIndexMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "ახალი პაროლი — Pika",
-  description: "დააყენეთ ახალი პაროლი Pika ანგარიშისთვის.",
+  title: "ახალი პაროლი — Luma",
+  description: "დააყენეთ ახალი პაროლი Luma ანგარიშისთვის.",
   ...noIndexMetadata,
 };
 

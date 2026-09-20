@@ -1,7 +1,7 @@
 /**
  * SAFE, TEMPORARY Vercel production catalogue import.
  *
- * - Uses DATABASE_URL from the environment (same as pika.ge on Vercel Production)
+ * - Uses DATABASE_URL from the environment (same as luma.ge on Vercel Production)
  * - Runs ONLY when RUN_PRODUCT_IMPORT === "true"
  * - Idempotent by SKU against the versioned approved dataset in-repo
  * - Never prints secrets / full DATABASE_URL

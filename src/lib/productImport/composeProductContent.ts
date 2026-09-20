@@ -11,7 +11,7 @@ export type ComposedProductContent = {
 };
 
 export const OLD_BOILERPLATE_PATTERNS = [
-  /წარმოდგენილია\s+Pika-ს\s+კატალოგში/i,
+  /წარმოდგენილია\s+Luma-ს\s+კატალოგში/i,
   /არის\s+[\w-]+-ის\s+პროდუქტი\s+კატეგორიიდან/i,
   /განთავსებულია\s+კატეგორიაში/i,
   /აღმოაჩინე\s+.+\s+—\s+[\w-]+-ის\s+მოდელი\s+კატეგორიაში/i,
@@ -121,10 +121,10 @@ function commercialParagraph(facts: ProductFacts): string | null {
   const seed = skuSeed(facts.sku);
   if (seed % 5 === 0) return null;
   const options = [
-    `შეიძინე ${facts.name} Pika-ში და ისარგებლე განვადებით შეძენის შესაძლებლობით.`,
-    `${facts.brand}-ის ეს მოდელი ხელმისაწვდომია Pika-ს ონლაინ მაღაზიაში — გაეცანი ფასს და შეიძინე ონლაინ.`,
-    `Pika-ში ${facts.name} შეგიძლიათ შეიძინოთ ონლაინ; გაეცანი ფასს და შეძენის პირობებს.`,
-    `იხილე ${facts.name} Pika-ში და შეიძინე განვადებით, სადაც ეს შესაძლებელია.`,
+    `შეიძინე ${facts.name} Luma-ში და ისარგებლე განვადებით შეძენის შესაძლებლობით.`,
+    `${facts.brand}-ის ეს მოდელი ხელმისაწვდომია Luma-ს ონლაინ მაღაზიაში — გაეცანი ფასს და შეიძინე ონლაინ.`,
+    `Luma-ში ${facts.name} შეგიძლიათ შეიძინოთ ონლაინ; გაეცანი ფასს და შეძენის პირობებს.`,
+    `იხილე ${facts.name} Luma-ში და შეიძინე განვადებით, სადაც ეს შესაძლებელია.`,
   ];
   return options[seed % options.length]!;
 }
@@ -199,8 +199,8 @@ function composeFullDescription(facts: ProductFacts): string {
 
   const p2 = cleanGeneratedText(
     attrs
-      ? `ეს მოდელი ${use} შესაფერისია და Pika-ს კატალოგში ${facts.category} კატეგორიაშია წარმოდგენილი.`
-      : `${facts.productTypeKa} ${use} გამოიყენება და Pika-ს კატალოგში ${facts.category} კატეგორიაშია წარმოდგენილი.`,
+      ? `ეს მოდელი ${use} შესაფერისია და Luma-ს კატალოგში ${facts.category} კატეგორიაშია წარმოდგენილი.`
+      : `${facts.productTypeKa} ${use} გამოიყენება და Luma-ს კატალოგში ${facts.category} კატეგორიაშია წარმოდგენილი.`,
   );
 
   const commercial = commercialParagraph(facts);
@@ -257,10 +257,10 @@ function composeSeoDescription(facts: ProductFacts): string {
   const attr = keyAttributes(facts)[0];
   const attrPart = attr ? ` ${attr}-ით` : "";
   const openings = [
-    `შეიძინე ${facts.brand} ${model}${attrPart} Pika-ში. გაეცანი ფასს და ისარგებლე განვადებით შეძენის შესაძლებლობით.`,
-    `${facts.brand} ${model} — ${facts.productTypeKa}${attrPart}. იხილე ფასი და შეიძინე ონლაინ Pika-ში.`,
-    `${model} (${facts.brand}) Pika-ს მაღაზიაში. გაეცანი ფასს და შეიძინე ონლაინ.`,
-    `Pika-ში: ${facts.brand} ${model}${attrPart}. შეიძინე ონლაინ ან განვადებით.`,
+    `შეიძინე ${facts.brand} ${model}${attrPart} Luma-ში. გაეცანი ფასს და ისარგებლე განვადებით შეძენის შესაძლებლობით.`,
+    `${facts.brand} ${model} — ${facts.productTypeKa}${attrPart}. იხილე ფასი და შეიძინე ონლაინ Luma-ში.`,
+    `${model} (${facts.brand}) Luma-ს მაღაზიაში. გაეცანი ფასს და შეიძინე ონლაინ.`,
+    `Luma-ში: ${facts.brand} ${model}${attrPart}. შეიძინე ონლაინ ან განვადებით.`,
   ];
   let text = cleanGeneratedText(openings[seed % openings.length]!);
   if (text.length > 165) text = `${text.slice(0, 162)}...`;

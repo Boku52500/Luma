@@ -99,9 +99,17 @@ describe("storefront branding pass", () => {
     assert.doesNotMatch(read("components/layout/Header.tsx"), /TopUtilityBar/);
   });
 
-  it("configures favicon metadata and #27386d brand token", () => {
+  it("configures favicon metadata and #8f1eae brand token", () => {
     assert.match(read("app/layout.tsx"), /favicon-96x96\.png/);
-    assert.match(read("app/globals.css"), /--color-brand-600:\s*#27386d/);
+    assert.match(read("app/globals.css"), /--color-brand-600:\s*#8f1eae/);
+  });
+
+  it("renders the storefront logo from public/Logo.png without optimizer cache", () => {
+    const logo = read("components/layout/Logo.tsx");
+    assert.match(logo, /src="\/Logo\.png"/);
+    assert.match(logo, /unoptimized/);
+    assert.match(logo, /LOGO_WIDTH\s*=\s*1863/);
+    assert.match(logo, /LOGO_HEIGHT\s*=\s*476/);
   });
 });
 

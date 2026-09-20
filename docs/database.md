@@ -1,4 +1,4 @@
-# Pika database foundation
+# Luma database foundation
 
 This is the production-ready PostgreSQL + Prisma layer. Homepage product sections, category PLP, product detail pages, and search read the catalogue from PostgreSQL. Cart stays in **localStorage**. Signed-in wishlists, addresses, profiles, and orders are PostgreSQL-backed. Guest checkout and guest wishlists remain browser-local.
 
@@ -21,7 +21,7 @@ This is the production-ready PostgreSQL + Prisma layer. Homepage product section
 The example URL matches `docker-compose.yml`:
 
 ```
-DATABASE_URL="postgresql://pika:pika@localhost:5432/pika?schema=public"
+DATABASE_URL="postgresql://luma:luma@localhost:5432/luma?schema=public"
 AUTH_SECRET="replace-with-a-long-random-secret"
 AUTH_URL="http://localhost:3000"
 ```
@@ -44,7 +44,7 @@ Equivalent:
 docker compose up -d --wait
 ```
 
-Stop (named volume `pika_pgdata` is kept, so data survives):
+Stop (named volume `luma_pgdata` is kept, so data survives):
 
 ```bash
 npm run db:down        # docker compose down
@@ -167,7 +167,7 @@ See `docs/admin.md`.
 - All current categories, plus a hierarchy demo: `phones` → `phones-smartphones` → `phones-apple`
 - Images as `mock://{visual}?tone={n}` until real photography exists
 - Specs and cartesian variants from mock PDP data
-- Promo `PIKA10` (cart UI still previews this locally; checkout revalidates against `Promotion`)
+- Promo `LUMA10` (cart UI still previews this locally; checkout revalidates against `Promotion`)
 
 The seed deletes catalogue/commerce rows then re-inserts, so a second run does not create duplicates. It is for **development**. Do not run it against production.
 
@@ -177,9 +177,9 @@ The seed deletes catalogue/commerce rows then re-inserts, so a second run does n
 
 Migrated to PostgreSQL: homepage featured/new-arrival product rows, `/category/[slug]`, `/product/[slug]` (including related products), header search suggestions, and `/search?q=...`. Those routes do not import `src/data` catalogue arrays.
 
-Cart remains browser-local for guests and signed-in customers (`pika:cart`, schema version 2). Wishlist is dual-mode:
+Cart remains browser-local for guests and signed-in customers (`luma:cart`, schema version 2). Wishlist is dual-mode:
 
-- **Logged out:** local snapshot (`pika:wishlist`, version 2), same as before.
+- **Logged out:** local snapshot (`luma:wishlist`, version 2), same as before.
 - **Logged in:** PostgreSQL `WishlistItem`. Guest ids are merged on login (`skipDuplicates`) and the local list is cleared.
 - **Cart pricing** is still the add-time snapshot for UI only. Checkout **revalidates** live PostgreSQL prices, stock, promo, and delivery before inserting `Order` / `OrderItem`. Payment status is `unpaid` — no card charge is attempted.
 

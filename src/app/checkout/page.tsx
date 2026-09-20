@@ -8,7 +8,7 @@ import { getSessionCustomer } from "@/server/auth/session";
 import { listCustomerSavedPaymentMethods } from "@/server/payments/bog/savedCard";
 
 export const metadata: Metadata = {
-  title: "შეკვეთის გაფორმება — Pika",
+  title: "შეკვეთის გაფორმება — Luma",
   description: "დაასრულეთ შეკვეთა — მიწოდების და გადახდის დეტალები.",
   ...noIndexMetadata,
 };

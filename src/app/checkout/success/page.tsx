@@ -7,7 +7,7 @@ import { getOrderForConfirmation } from "@/server/account/orders";
 import { noIndexMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "შეკვეთა დადასტურებულია — Pika",
+  title: "შეკვეთა დადასტურებულია — Luma",
   description: "თქვენი შეკვეთა წარმატებით გაფორმდა.",
   ...noIndexMetadata,
 };

@@ -115,7 +115,7 @@ function methodById(id: PaymentMethodId): PaymentMethodOption {
   return found;
 }
 
-/** Card + flagged BOG calculator options. Cash stays as the existing non-BOG path. No Pika wallet buttons. */
+/** Card + flagged BOG calculator options. Cash stays as the existing non-BOG path. No Luma wallet buttons. */
 export function visibleCheckoutPaymentMethods(
   caps: PublicCheckoutCapabilities | null | undefined,
 ): PaymentMethodOption[] {

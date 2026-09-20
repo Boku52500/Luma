@@ -5,7 +5,7 @@ import { listCustomerOrders } from "@/server/account/orders";
 import { listMyAddresses } from "@/server/actions/addresses";
 
 export const metadata: Metadata = {
-  title: "ჩემი ანგარიში — Pika",
+  title: "ჩემი ანგარიში — Luma",
   description: "მართეთ შეკვეთები, რჩეულები, მისამართები და პროფილი.",
 };
 

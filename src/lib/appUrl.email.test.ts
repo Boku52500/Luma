@@ -5,9 +5,9 @@ import { passwordResetUrl } from "./appUrl";
 describe("passwordResetUrl", { concurrency: false }, () => {
   it("builds the reset link from APP_ORIGIN", () => {
     const previous = process.env.APP_ORIGIN;
-    process.env.APP_ORIGIN = "https://pika.ge";
+    process.env.APP_ORIGIN = "https://luma.ge";
     try {
-      assert.equal(passwordResetUrl("abc+def"), "https://pika.ge/reset-password?token=abc%2Bdef");
+      assert.equal(passwordResetUrl("abc+def"), "https://luma.ge/reset-password?token=abc%2Bdef");
     } finally {
       if (previous === undefined) delete process.env.APP_ORIGIN;
       else process.env.APP_ORIGIN = previous;

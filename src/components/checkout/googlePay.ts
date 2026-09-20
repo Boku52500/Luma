@@ -53,7 +53,7 @@ export async function requestGooglePayToken(
       currencyCode: "GEL",
       countryCode: "GE",
     },
-    merchantInfo: { merchantName: "Pika" },
+    merchantInfo: { merchantName: "Luma" },
   };
   const paymentData = await client.loadPaymentData(request);
   const token = paymentData?.paymentMethodData?.tokenizationData?.token;

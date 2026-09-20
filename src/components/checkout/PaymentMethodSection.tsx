@@ -23,7 +23,7 @@ const iconByMethod: Record<PaymentMethodId, typeof CreditCard> = {
 /**
  * Checkout payment choices: Card (BOG hosted), ნაწილ-ნაწილ / განვადება when
  * flagged, and existing cash-on-delivery. Google Pay / Apple Pay stay on BOG's
- * hosted card page — Pika does not draw wallet buttons.
+ * hosted card page — Luma does not draw wallet buttons.
  */
 export function PaymentMethodSection({
   value,
@@ -190,7 +190,7 @@ export function PaymentMethodSection({
 
       {value === "bog_loan" || value === "bnpl" ? (
         <p className="text-small text-text-muted">
-          პირობებს ხსნის საქართველოს ბანკის კალკულატორი. Pika პროცენტს ან ყოველთვიურ თანხას არ ითვლის.
+          პირობებს ხსნის საქართველოს ბანკის კალკულატორი. Luma პროცენტს ან ყოველთვიურ თანხას არ ითვლის.
           {loanSummary ? ` არჩეული პირობა: ${loanSummary}` : ""}
           {calculatorStatus === "loading" ? " კალკულატორი იტვირთება..." : ""}
           {calculatorStatus === "error"

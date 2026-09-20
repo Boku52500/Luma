@@ -1,6 +1,6 @@
 # Production deployment
 
-Pika is a Next.js App Router shop with PostgreSQL, Auth.js credentials, optional Cloudflare R2 images, and optional Bank of Georgia card payments. Courier APIs and OAuth are not part of this deployment.
+Luma is a Next.js App Router shop with PostgreSQL, Auth.js credentials, optional Cloudflare R2 images, and optional Bank of Georgia card payments. Courier APIs and OAuth are not part of this deployment.
 
 Do not run `prisma migrate dev` or `npm run db:seed` against production.
 
@@ -11,7 +11,7 @@ Do not run `prisma migrate dev` or `npm run db:seed` against production.
 | Node.js 20.19+ host | `next start` or a Next.js platform (Vercel, Render, Fly, a VPS, …) |
 | Managed PostgreSQL 16+ | Catalogue, customers, orders |
 | Cloudflare R2 | Product photos (optional until you upload) |
-| HTTPS origin | `https://pika.ge` (example) |
+| HTTPS origin | `https://luma.ge` (example) |
 
 Local Docker PostgreSQL is for development only. Production should use a managed database with automated backups.
 
@@ -28,16 +28,16 @@ Required:
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
 
-- `APP_ORIGIN` and `AUTH_URL` — canonical origin, no trailing slash, e.g. `https://pika.ge`
+- `APP_ORIGIN` and `AUTH_URL` — canonical origin, no trailing slash, e.g. `https://luma.ge`
 
 Optional:
 
 - `DATABASE_POOL_MAX` — connections this Node process opens (default 10 in production). Behind PgBouncer or on serverless, use `1`–`5`.
-- R2 variables — see `docs/storage.md`. Set `R2_PUBLIC_URL` to `https://images.pika.ge` once DNS exists.
+- R2 variables — see `docs/storage.md`. Set `R2_PUBLIC_URL` to `https://images.luma.ge` once DNS exists.
 - `IMAGE_REMOTE_HOSTS` — extra `next/image` hostnames
 - `RATE_LIMIT_STORE` — `postgres` (production default) or `memory` (single process)
 - Bank of Georgia card payments — see `docs/payments-bog.md`. Set `BOG_CLIENT_ID` / `BOG_CLIENT_SECRET` (and optional `BOG_PAYMENTS_ENABLED`) on the host. Callback URL is `${APP_ORIGIN}/api/payments/bog/callback` and must be public HTTPS.
-- Transactional email (Resend) — see `docs/email.md`. Set `RESEND_API_KEY` and `EMAIL_FROM` (`Pika <noreply@pika.ge>`). The shop still boots if they are missing locally; production verify requires them.
+- Transactional email (Resend) — see `docs/email.md`. Set `RESEND_API_KEY` and `EMAIL_FROM` (`Luma <noreply@luma.ge>`). The shop still boots if they are missing locally; production verify requires them.
 
 ## Database
 
@@ -95,21 +95,21 @@ Password reset sends mail through Resend when configured. The public request sti
 
 ## Domain and HTTPS
 
-Choose one canonical host, e.g. `https://pika.ge`, and set `APP_ORIGIN` to it.
+Choose one canonical host, e.g. `https://luma.ge`, and set `APP_ORIGIN` to it.
 
-`src/proxy.ts` 308-redirects `www.pika.ge` ↔ `pika.ge` according to that origin. Preview hosts that are neither apex nor www are not redirected.
+`src/proxy.ts` 308-redirects `luma.ge` ↔ `luma.ge` according to that origin. Preview hosts that are neither apex nor www are not redirected.
 
 Point DNS:
 
-1. Apex `pika.ge` → the Next.js host (or the host’s documented apex method).
+1. Apex `luma.ge` → the Next.js host (or the host’s documented apex method).
 2. `www` → the same app (CNAME or redirect).
-3. Optional `images.pika.ge` → the R2 custom domain.
+3. Optional `images.luma.ge` → the R2 custom domain.
 
 Terminate TLS at the host or CDN. HSTS is sent when the configured origin is https.
 
 ## R2
 
-Keep using the `*.r2.dev` public URL until the custom domain is live. Then set `R2_PUBLIC_URL=https://images.pika.ge` and restart/redeploy so `next.config` picks up the image host.
+Keep using the `*.r2.dev` public URL until the custom domain is live. Then set `R2_PUBLIC_URL=https://images.luma.ge` and restart/redeploy so `next.config` picks up the image host.
 
 Do not add lifecycle rules that expire product objects. Orphan objects after a failed R2 delete are safe to garbage-collect later by prefix `products/`.
 

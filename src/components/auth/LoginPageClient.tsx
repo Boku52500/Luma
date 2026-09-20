@@ -49,7 +49,7 @@ export function LoginPageClient() {
   return (
     <AuthLayout
       title="შესვლა"
-      subtitle="შედით თქვენს Pika ანგარიშში"
+      subtitle="შედით თქვენს Luma ანგარიშში"
       footer={
         <p className="text-small text-text-muted">
           არ გაქვთ ანგარიში?{" "}

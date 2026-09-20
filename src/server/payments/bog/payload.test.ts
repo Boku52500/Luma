@@ -4,12 +4,12 @@ import { Prisma } from "@/generated/prisma/client";
 import { amountsMatch, buildBogCreateOrderBody, parseBogAmount } from "./payload";
 
 describe("buildBogCreateOrderBody", () => {
-  it("maps Pika order fields to documented BOG keys", () => {
+  it("maps Luma order fields to documented BOG keys", () => {
     const body = buildBogCreateOrderBody({
-      callbackUrl: "https://pika.example/api/payments/bog/callback",
-      externalOrderId: "PIKA-TEST-1",
-      successUrl: "https://pika.example/checkout/payment/success?order=PIKA-TEST-1",
-      failUrl: "https://pika.example/checkout/payment/fail?order=PIKA-TEST-1",
+      callbackUrl: "https://luma.example/api/payments/bog/callback",
+      externalOrderId: "LUMA-TEST-1",
+      successUrl: "https://luma.example/checkout/payment/success?order=LUMA-TEST-1",
+      failUrl: "https://luma.example/checkout/payment/fail?order=LUMA-TEST-1",
       currency: "GEL",
       total: "12.50",
       discount: "1.50",
@@ -26,8 +26,8 @@ describe("buildBogCreateOrderBody", () => {
       buyerName: "ნინო კაპანაძე",
     });
 
-    assert.equal(body.callback_url, "https://pika.example/api/payments/bog/callback");
-    assert.equal(body.external_order_id, "PIKA-TEST-1");
+    assert.equal(body.callback_url, "https://luma.example/api/payments/bog/callback");
+    assert.equal(body.external_order_id, "LUMA-TEST-1");
     assert.deepEqual(body.payment_method, ["card"]);
     assert.equal(body.capture, "automatic");
     assert.equal(body.purchase_units.currency, "GEL");
@@ -37,7 +37,7 @@ describe("buildBogCreateOrderBody", () => {
     assert.equal(body.purchase_units.basket[0]?.product_id, "p-1");
     assert.equal(body.purchase_units.basket[0]?.quantity, 2);
     assert.equal(body.purchase_units.basket[0]?.unit_price, 4);
-    assert.equal(body.redirect_urls.success.includes("PIKA-TEST-1"), true);
+    assert.equal(body.redirect_urls.success.includes("LUMA-TEST-1"), true);
   });
 });
 

@@ -4,7 +4,7 @@ import { requireCustomer } from "@/server/auth/session";
 import { listWishlistProducts } from "@/server/actions/wishlist";
 
 export const metadata: Metadata = {
-  title: "რჩეულები — Pika",
+  title: "რჩეულები — Luma",
   description: "თქვენი შენახული პროდუქტები.",
 };
 

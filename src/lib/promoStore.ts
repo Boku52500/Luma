@@ -8,7 +8,7 @@
  * using the same SSR-safe module-singleton pattern as the cart itself.
  */
 
-const STORAGE_KEY = "pika:promo-code";
+const STORAGE_KEY = "luma:promo-code";
 const listeners = new Set<() => void>();
 const EMPTY = "";
 

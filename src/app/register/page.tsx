@@ -6,8 +6,8 @@ import { RegisterPageClient } from "@/components/auth/RegisterPageClient";
 import { noIndexMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "რეგისტრაცია — Pika",
-  description: "შექმენით ახალი Pika ანგარიში.",
+  title: "რეგისტრაცია — Luma",
+  description: "შექმენით ახალი Luma ანგარიში.",
   ...noIndexMetadata,
 };
 

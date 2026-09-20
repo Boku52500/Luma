@@ -6,13 +6,17 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { scrollHomeLogoToTop } from "@/lib/scrollRestoration";
 
+/** Intrinsic pixel size of `public/Logo.png` — keep in sync with the asset. */
+const LOGO_WIDTH = 1863;
+const LOGO_HEIGHT = 476;
+
 export function Logo({ className }: { className?: string }) {
   const pathname = usePathname();
 
   return (
     <Link
       href="/"
-      aria-label="Pika — მთავარი გვერდი"
+      aria-label="Luma — მთავარი გვერდი"
       className={cn("group inline-flex shrink-0 items-center", className)}
       onClick={(event) => {
         if (pathname !== "/") return;
@@ -22,11 +26,12 @@ export function Logo({ className }: { className?: string }) {
     >
       <Image
         src="/Logo.png"
-        alt="Pika"
-        width={140}
-        height={40}
+        alt="Luma"
+        width={LOGO_WIDTH}
+        height={LOGO_HEIGHT}
         priority
-        className="h-8 w-auto object-contain sm:h-9"
+        unoptimized
+        className="h-8 w-auto max-w-[min(100%,11.5rem)] object-contain object-left sm:h-9 sm:max-w-[13rem]"
       />
     </Link>
   );

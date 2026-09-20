@@ -41,7 +41,7 @@ export async function generateMetadata({
   if (!meta) notFound();
 
   return {
-    title: meta.seoTitle ?? `${meta.name} — Pika`,
+    title: meta.seoTitle ?? `${meta.name} — Luma`,
     description: meta.seoDescription ?? meta.shortDescription ?? undefined,
     robots: meta.indexable ? undefined : noIndexRobots,
     ...pageCanonical(`/product/${slug}`, meta.canonicalOverride),

@@ -83,7 +83,7 @@ function round2(value: number): number {
 function generateOrderNumber(): string {
   const stamp = Date.now().toString(36).toUpperCase();
   const nonce = randomBytes(2).toString("hex").toUpperCase();
-  return `PIKA-${stamp}-${nonce}`;
+  return `LUMA-${stamp}-${nonce}`;
 }
 
 function pickName(translations: { locale: string; name: string }[], fallback: string): string {
