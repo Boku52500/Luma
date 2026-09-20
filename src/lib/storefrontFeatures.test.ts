@@ -101,7 +101,12 @@ describe("storefront branding pass", () => {
 
   it("configures favicon metadata and #27386d brand token", () => {
     assert.match(read("app/layout.tsx"), /favicon-96x96\.png/);
+    assert.match(read("app/layout.tsx"), /favicon\.ico/);
     assert.match(read("app/globals.css"), /--color-brand-600:\s*#27386d/);
+    assert.equal(existsSync(join(process.cwd(), "public/favicon-96x96.png")), true);
+    assert.equal(existsSync(join(process.cwd(), "public/favicon.ico")), true);
+    assert.equal(existsSync(join(process.cwd(), "src/app/icon.png")), true);
+    assert.equal(existsSync(join(process.cwd(), "src/app/favicon.ico")), true);
   });
 
   it("renders the storefront logo from public/Logo.png without optimizer cache", () => {
