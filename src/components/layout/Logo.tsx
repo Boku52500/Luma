@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 import { scrollHomeLogoToTop } from "@/lib/scrollRestoration";
 
 /** Intrinsic pixel size of `public/Logo.png` — keep in sync with the asset. */
-const LOGO_WIDTH = 1863;
-const LOGO_HEIGHT = 476;
+const LOGO_WIDTH = 905;
+const LOGO_HEIGHT = 315;
 
 export function Logo({ className }: { className?: string }) {
   const pathname = usePathname();

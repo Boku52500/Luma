@@ -8,18 +8,18 @@
    ========================================================================== */
 
 :root {
-  /* ---- Brand (#27386d primary) ------------------------------------ */
-  --color-brand-50: #eef1f6;
-  --color-brand-100: #dce3ee;
-  --color-brand-200: #b8c5d9;
-  --color-brand-300: #8a9dbd;
-  --color-brand-400: #5c7499;
-  --color-brand-500: #3a5380;
-  --color-brand-600: #27386d;
-  --color-brand-700: #1f2d57;
-  --color-brand-800: #182445;
-  --color-brand-900: #121b34;
-  --color-brand-950: #0a0f1f;
+  /* ---- Brand (#fc3c0e primary) ------------------------------------ */
+  --color-brand-50: #fff3ef;
+  --color-brand-100: #ffe4db;
+  --color-brand-200: #ffc5b3;
+  --color-brand-300: #ff9a7a;
+  --color-brand-400: #ff6a42;
+  --color-brand-500: #ff4d24;
+  --color-brand-600: #fc3c0e;
+  --color-brand-700: #d32f0a;
+  --color-brand-800: #a8260a;
+  --color-brand-900: #7a1d0b;
+  --color-brand-950: #420e06;
 
   /* ---- Ink (near-black, used for dark surfaces: header/footer) ----- */
   --color-ink-50: #f4f5f7;

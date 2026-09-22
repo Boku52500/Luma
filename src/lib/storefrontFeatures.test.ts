@@ -99,10 +99,10 @@ describe("storefront branding pass", () => {
     assert.doesNotMatch(read("components/layout/Header.tsx"), /TopUtilityBar/);
   });
 
-  it("configures favicon metadata and #27386d brand token", () => {
+  it("configures favicon metadata and #fc3c0e brand token", () => {
     assert.match(read("app/layout.tsx"), /favicon-96x96\.png/);
     assert.match(read("app/layout.tsx"), /favicon\.ico/);
-    assert.match(read("app/globals.css"), /--color-brand-600:\s*#27386d/);
+    assert.match(read("app/globals.css"), /--color-brand-600:\s*#fc3c0e/);
     assert.equal(existsSync(join(process.cwd(), "public/favicon-96x96.png")), true);
     assert.equal(existsSync(join(process.cwd(), "public/favicon.ico")), true);
     assert.equal(existsSync(join(process.cwd(), "src/app/icon.png")), true);
@@ -113,8 +113,8 @@ describe("storefront branding pass", () => {
     const logo = read("components/layout/Logo.tsx");
     assert.match(logo, /src="\/Logo\.png"/);
     assert.match(logo, /unoptimized/);
-    assert.match(logo, /LOGO_WIDTH\s*=\s*1863/);
-    assert.match(logo, /LOGO_HEIGHT\s*=\s*476/);
+    assert.match(logo, /LOGO_WIDTH\s*=\s*905/);
+    assert.match(logo, /LOGO_HEIGHT\s*=\s*315/);
   });
 });
 
