@@ -31,7 +31,7 @@ export function Logo({ className }: { className?: string }) {
         height={LOGO_HEIGHT}
         priority
         unoptimized
-        className="h-8 w-auto max-w-[min(100%,11.5rem)] object-contain object-left sm:h-9 sm:max-w-[13rem]"
+        className="h-11 w-auto max-w-[min(100%,15rem)] object-contain object-left sm:h-12 sm:max-w-[17rem] lg:h-14 lg:max-w-[19rem]"
       />
     </Link>
   );

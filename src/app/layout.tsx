@@ -21,11 +21,11 @@ export const metadata: Metadata = {
     "Luma — ორიგინალი ტექნიკა და გაჯეტები ოფიციალური გარანტიით. სმარტფონები, ლეპტოპები, ტელევიზორები და აქსესუარები სწრაფი მიწოდებით მთელი საქართველოს მასშტაბით.",
   icons: {
     icon: [
-      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
-      { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/favicon-96x96.png?v=hex", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.ico?v=hex", sizes: "32x32", type: "image/x-icon" },
     ],
-    shortcut: [{ url: "/favicon-96x96.png", type: "image/png" }],
-    apple: [{ url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" }],
+    shortcut: [{ url: "/favicon-96x96.png?v=hex", type: "image/png" }],
+    apple: [{ url: "/favicon-96x96.png?v=hex", sizes: "96x96", type: "image/png" }],
   },
 };
 
