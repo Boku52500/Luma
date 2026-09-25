@@ -178,4 +178,14 @@ describe("admin product image upload before save", () => {
     assert.match(read("server/storage/keys.ts"), /products\/pending/);
     assert.match(read("components/admin/ProductEditor.tsx"), /objectKey: image\.objectKey/);
   });
+
+  it("uses drag-and-drop sorting instead of up/down buttons", () => {
+    const manager = read("components/admin/ProductImageManager.tsx");
+    assert.match(manager, /DndContext/);
+    assert.match(manager, /useSortable/);
+    assert.match(manager, /GripVertical/);
+    assert.match(manager, /arrayMove/);
+    assert.doesNotMatch(manager, /ArrowUp|ArrowDown/);
+    assert.match(read("server/actions/admin.ts"), /reorderAdminProductImages/);
+  });
 });

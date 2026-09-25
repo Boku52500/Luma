@@ -1,7 +1,18 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
-import { ArrowDown, ArrowUp, Plus, Trash2, Upload } from "lucide-react";
+import { useMemo, useRef, useState, useTransition } from "react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, Plus, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
 import { AdminConfirmDialog } from "@/components/admin/AdminConfirmDialog";
@@ -50,6 +61,104 @@ export function newEditorImage(sortOrder: number): EditorImage {
   };
 }
 
+function withSortOrders(rows: EditorImage[]): EditorImage[] {
+  return rows.map((row, index) => ({ ...row, sortOrder: index }));
+}
+
+function SortableImageRow({
+  image,
+  index,
+  productName,
+  disabled,
+  onChangeUrl,
+  onChangeAlt,
+  onBlurAlt,
+  onRemove,
+}: {
+  image: EditorImage;
+  index: number;
+  productName: string;
+  disabled: boolean;
+  onChangeUrl: (url: string) => void;
+  onChangeAlt: (alt: string) => void;
+  onBlurAlt: () => void;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: image.key,
+    disabled,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.55 : 1,
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className="grid gap-3 rounded-[var(--radius-sm)] border border-border p-3 sm:grid-cols-[auto_88px_1fr_auto]"
+    >
+      <button
+        type="button"
+        className="touch-none inline-flex size-10 items-center justify-center self-center rounded-[var(--radius-sm)] border border-border text-text-faint hover:bg-surface-2 hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-40"
+        aria-label={`სურათის ${index + 1} გადაადგილება`}
+        disabled={disabled}
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-4" />
+      </button>
+      <div className="size-20 overflow-hidden rounded-[var(--radius-sm)] bg-surface-2">
+        {isPublicImageUrl(image.url) ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={image.url} alt={image.alt || productName || ""} className="size-full object-contain" />
+        ) : (
+          <div className="flex size-full items-center justify-center px-1 text-center text-[0.65rem] text-text-faint">
+            {index === 0 ? "ძირითადი" : "პრევიუ"}
+          </div>
+        )}
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {image.objectKey ? (
+          <p className="text-label self-end text-success-600">აიტვირთა · R2</p>
+        ) : (
+          <FormField id={`img-url-${image.key}`} label="URL">
+            <input
+              id={`img-url-${image.key}`}
+              value={image.url}
+              onChange={(event) => onChangeUrl(event.target.value)}
+              className={adminInputErrorClass(false)}
+            />
+          </FormField>
+        )}
+        <FormField id={`img-alt-${image.key}`} label="Alt ტექსტი" optional>
+          <input
+            id={`img-alt-${image.key}`}
+            value={image.alt}
+            placeholder={productName || "პროდუქტის სახელი გამოჩნდება თუ ცარიელია"}
+            onChange={(event) => onChangeAlt(event.target.value)}
+            onBlur={onBlurAlt}
+            className={adminInputErrorClass(false)}
+          />
+        </FormField>
+      </div>
+      <div className="flex items-center gap-1 sm:flex-col">
+        <button
+          type="button"
+          aria-label="წაშლა"
+          disabled={disabled}
+          className="inline-flex size-10 items-center justify-center rounded-[var(--radius-sm)] border border-border text-danger-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+          onClick={onRemove}
+        >
+          <Trash2 className="size-4" />
+        </button>
+      </div>
+    </li>
+  );
+}
+
 export function ProductImageManager({
   productId,
   productName,
@@ -69,24 +178,33 @@ export function ProductImageManager({
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [removeIndex, setRemoveIndex] = useState<number | null>(null);
-  const busy = pending || jobs.some((job) => job.status === "uploading");
+  const uploading = jobs.some((job) => job.status === "uploading");
+  const busy = pending || uploading;
+  const sortableIds = useMemo(() => images.map((image) => image.key), [images]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   function persistOrder(next: EditorImage[]) {
-    onChange(next);
-    const orderedIds = next.map((row) => row.id).filter(Boolean);
-    if (!productId || orderedIds.length !== next.length || orderedIds.length === 0) return;
+    const ordered = withSortOrders(next);
+    onChange(ordered);
+    const orderedIds = ordered.map((row) => row.id).filter(Boolean);
+    if (!productId || orderedIds.length !== ordered.length || orderedIds.length === 0) return;
     startTransition(async () => {
-      await reorderAdminProductImages({ productId, orderedIds });
+      const result = await reorderAdminProductImages({ productId, orderedIds });
+      if (!result.ok) setMessage(result.message);
     });
   }
 
-  function move(index: number, delta: number) {
-    const nextIndex = index + delta;
-    if (nextIndex < 0 || nextIndex >= images.length) return;
-    const copy = [...images];
-    const [item] = copy.splice(index, 1);
-    copy.splice(nextIndex, 0, item);
-    persistOrder(copy);
+  function onDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const from = images.findIndex((image) => image.key === active.id);
+    const to = images.findIndex((image) => image.key === over.id);
+    if (from < 0 || to < 0 || from === to) return;
+    persistOrder(arrayMove(images, from, to));
   }
 
   async function uploadFiles(fileList: FileList | File[]) {
@@ -149,7 +267,7 @@ export function ProductImageManager({
   function confirmRemove() {
     if (removeIndex == null) return;
     const target = images[removeIndex];
-    const remaining = images.filter((_, i) => i !== removeIndex);
+    const remaining = withSortOrders(images.filter((_, i) => i !== removeIndex));
     setRemoveIndex(null);
     if (!target?.id) {
       onChange(remaining);
@@ -176,7 +294,7 @@ export function ProductImageManager({
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-text">სურათები</h2>
-          <p className="text-label mt-1 text-text-faint">პირველი სურათი არის ძირითადი კატალოგის ფოტო.</p>
+          <p className="text-label mt-1 text-text-faint">პირველი სურათი არის ძირითადი კატალოგის ფოტო. გადაათრიეთ სახელურით რიგის შესაცვლელად.</p>
         </div>
         <Button type="button" variant="secondary" size="sm" onClick={() => onChange([...images, newEditorImage(images.length)])}>
           <Plus className="size-4" />
@@ -199,11 +317,11 @@ export function ProductImageManager({
       <div
         onDragEnter={(event) => {
           event.preventDefault();
-          setDragOver(true);
+          if (event.dataTransfer.types.includes("Files")) setDragOver(true);
         }}
         onDragOver={(event) => {
           event.preventDefault();
-          setDragOver(true);
+          if (event.dataTransfer.types.includes("Files")) setDragOver(true);
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(event) => {
@@ -224,7 +342,7 @@ export function ProductImageManager({
           accept={PRODUCT_IMAGE_ACCEPT}
           multiple
           className="sr-only"
-          disabled={!storageConfigured || busy}
+          disabled={!storageConfigured || uploading}
           onChange={(event) => {
             if (event.target.files?.length) void uploadFiles(event.target.files);
             event.target.value = "";
@@ -253,84 +371,30 @@ export function ProductImageManager({
       {images.length === 0 && jobs.length === 0 ? (
         <p className="text-small text-text-muted">სურათები ჯერ არ არის.</p>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {images.map((image, index) => (
-            <li key={image.key} className="grid gap-3 rounded-[var(--radius-sm)] border border-border p-3 sm:grid-cols-[88px_1fr_auto]">
-              <div className="size-20 overflow-hidden rounded-[var(--radius-sm)] bg-surface-2">
-                {isPublicImageUrl(image.url) ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={image.url} alt={image.alt || productName || ""} className="size-full object-contain" />
-                ) : (
-                  <div className="flex size-full items-center justify-center px-1 text-center text-[0.65rem] text-text-faint">
-                    {index === 0 ? "ძირითადი" : "პრევიუ"}
-                  </div>
-                )}
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {image.objectKey ? (
-                  <p className="text-label self-end text-success-600">აიტვირთა · R2</p>
-                ) : (
-                  <FormField id={`img-url-${index}`} label="URL">
-                    <input
-                      id={`img-url-${index}`}
-                      value={image.url}
-                      onChange={(event) =>
-                        onChange(images.map((row, i) => (i === index ? { ...row, url: event.target.value } : row)))
-                      }
-                      className={adminInputErrorClass(false)}
-                    />
-                  </FormField>
-                )}
-                <FormField id={`img-alt-${index}`} label="Alt ტექსტი" optional>
-                  <input
-                    id={`img-alt-${index}`}
-                    value={image.alt}
-                    placeholder={productName || "პროდუქტის სახელი გამოჩნდება თუ ცარიელია"}
-                    onChange={(event) =>
-                      onChange(images.map((row, i) => (i === index ? { ...row, alt: event.target.value } : row)))
-                    }
-                    onBlur={() => {
-                      if (!image.id) return;
-                      startTransition(async () => {
-                        await updateAdminProductImageAlt({ id: image.id, alt: image.alt });
-                      });
-                    }}
-                    className={adminInputErrorClass(false)}
-                  />
-                </FormField>
-              </div>
-              <div className="flex items-center gap-1 sm:flex-col">
-                <button
-                  type="button"
-                  aria-label="ზემოთ"
-                  disabled={index === 0 || busy}
-                  className="inline-flex size-10 items-center justify-center rounded-[var(--radius-sm)] border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-40"
-                  onClick={() => move(index, -1)}
-                >
-                  <ArrowUp className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="ქვემოთ"
-                  disabled={index === images.length - 1 || busy}
-                  className="inline-flex size-10 items-center justify-center rounded-[var(--radius-sm)] border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-40"
-                  onClick={() => move(index, 1)}
-                >
-                  <ArrowDown className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="წაშლა"
-                  disabled={busy}
-                  className="inline-flex size-10 items-center justify-center rounded-[var(--radius-sm)] border border-border text-danger-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                  onClick={() => setRemoveIndex(index)}
-                >
-                  <Trash2 className="size-4" />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+            <ul className="flex flex-col gap-3">
+              {images.map((image, index) => (
+                <SortableImageRow
+                  key={image.key}
+                  image={image}
+                  index={index}
+                  productName={productName}
+                  disabled={uploading}
+                  onChangeUrl={(url) => onChange(images.map((row, i) => (i === index ? { ...row, url } : row)))}
+                  onChangeAlt={(alt) => onChange(images.map((row, i) => (i === index ? { ...row, alt } : row)))}
+                  onBlurAlt={() => {
+                    if (!image.id) return;
+                    startTransition(async () => {
+                      await updateAdminProductImageAlt({ id: image.id, alt: image.alt });
+                    });
+                  }}
+                  onRemove={() => setRemoveIndex(index)}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
       )}
 
       <AdminConfirmDialog

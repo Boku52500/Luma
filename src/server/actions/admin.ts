@@ -66,6 +66,7 @@ import {
   publicUrlForObjectKey,
   putProductImageObject,
 } from "@/server/storage";
+import { revalidatePath } from "next/cache";
 import { normalizeMerchHref } from "@/lib/merchHref";
 import { revalidateCatalogue, revalidateHero, revalidateOrders, revalidatePromotions } from "@/server/admin/revalidate";
 
@@ -1270,7 +1271,12 @@ export async function reorderAdminProductImages(input: unknown): Promise<ActionR
       prisma.productImage.update({ where: { id }, data: { sortOrder: index } }),
     ),
   );
-  revalidateCatalogue({ productSlug: product.slug });
+  // Targeted storefront paths only — full catalogue/admin layout revalidation made
+  // each up/down click feel like ~15s while the admin editor waited on the action.
+  revalidatePath(`/product/${product.slug}`);
+  revalidatePath("/product/[slug]", "page");
+  revalidatePath("/");
+  revalidatePath("/search");
   return { ok: true };
 }
 
