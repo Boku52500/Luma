@@ -17,7 +17,7 @@ import {
   adminTextareaClass,
 } from "@/components/admin/adminUi";
 import { BADGE_KIND_OPTIONS } from "@/lib/adminLabels";
-import { planProductSpecifications } from "@/lib/adminProductSpecs";
+import { applyPastedSpecifications, parsePastedSpecificationTable, planProductSpecifications } from "@/lib/adminProductSpecs";
 import { deactivateAdminProduct, restoreAdminProduct, saveAdminProduct, createAdminVariantOption, createAdminSpecification, createAdminSpecificationValue } from "@/server/actions/admin";
 import { AdminCreatableCombobox } from "@/components/admin/AdminCreatableCombobox";
 import { AdminProductDeleteButton } from "@/components/admin/AdminProductDeleteButton";
@@ -96,6 +96,9 @@ export function ProductEditor({ product, brands, categories, variantAttributes, 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [confirmRestore, setConfirmRestore] = useState(false);
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const [pasteResult, setPasteResult] = useState<{ filled: number; skipped: string[] } | null>(null);
 
   function patch<K extends keyof AdminProductEditorData>(key: K, value: AdminProductEditorData[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -530,23 +533,89 @@ export function ProductEditor({ product, brands, categories, variantAttributes, 
       </section>
 
       <section className={adminCardClass}>
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-base font-semibold text-text">სპეციფიკაციები</h2>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() =>
-              setSpecRows((current) => [
-                ...current,
-                { key: `spec-${Date.now()}`, specificationId: "", specificationName: "", valueId: "", value: "" },
-              ])
-            }
-          >
-            <Plus className="size-4" />
-            სპეციფიკაციის დამატება
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setPasteOpen((open) => !open);
+                setPasteResult(null);
+              }}
+            >
+              სპეციფიკაციების ჩასმა
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() =>
+                setSpecRows((current) => [
+                  ...current,
+                  { key: `spec-${Date.now()}`, specificationId: "", specificationName: "", valueId: "", value: "" },
+                ])
+              }
+            >
+              <Plus className="size-4" />
+              სპეციფიკაციის დამატება
+            </Button>
+          </div>
         </div>
+        {pasteOpen ? (
+          <div className="mb-4 rounded-[var(--radius-sm)] border border-border bg-surface-2 p-3">
+            <FormField id="spec-paste" label="ჩასვით სპეციფიკაციები">
+              <textarea
+                id="spec-paste"
+                value={pasteText}
+                onChange={(event) => setPasteText(event.target.value)}
+                className={adminTextareaClass}
+                rows={10}
+                placeholder={"##### ზოგადი ინფორმაცია\n\n| ბრენდი | Microsoft |\n| --------- | --------- |\n| მოდელი/PN | Xbox Series S |"}
+              />
+            </FormField>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  const pasted = parsePastedSpecificationTable(pasteText);
+                  const result = applyPastedSpecifications(specRows, pasted, definitions);
+                  setSpecRows(result.rows);
+                  setPasteResult({ filled: result.filled, skipped: result.skipped });
+                }}
+              >
+                შევსება
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setPasteOpen(false);
+                  setPasteResult(null);
+                }}
+              >
+                დახურვა
+              </Button>
+            </div>
+            {pasteResult ? (
+              <div className="mt-3">
+                <p className="text-small text-text">
+                  შეივსო {pasteResult.filled} სპეციფიკაცია • {pasteResult.skipped.length} ვერ მოიძებნა
+                </p>
+                {pasteResult.skipped.length ? (
+                  <ul className="text-small mt-1 list-disc pl-5 text-text-muted">
+                    {pasteResult.skipped.map((name) => (
+                      <li key={name}>{name}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
         {specRows.length === 0 ? (
           <p className="text-small text-text-muted">სპეციფიკაციები არ არის. დაამატეთ RAM, Processor ან ნებისმიერი სხვა ველი — ახალი სქემა არ არის საჭირო.</p>
         ) : (

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { planProductSpecifications } from "./adminProductSpecs";
+import { applyPastedSpecifications, parsePastedSpecificationTable, planProductSpecifications } from "./adminProductSpecs";
 
 describe("planProductSpecifications", () => {
   it("keeps complete rows and ignores blank rows", () => {
@@ -42,5 +42,81 @@ describe("planProductSpecifications", () => {
     if (!plan.ok) return;
     assert.equal(plan.rows.length, 1);
     assert.equal(plan.rows[0]?.value, "16GB");
+  });
+});
+
+const SAMPLE_PASTE = `##### ზოგადი ინფორმაცია
+
+| ბრენდი    | Microsoft |
+| --------- | --------- |
+| მოდელი/PN | Xbox Series S |
+| ტიპი      | სათამაშო კონსოლი |
+
+##### პროცესორი
+
+| პროცესორის მწარმოებელი | AMD |
+| პროცესორის/ჩიპსეტის ტიპი | Ryzen Zen 2 |
+| ბირთვების რაოდენობა | 8 |
+
+##### დაკავშირების შესაძლებლობა
+
+| SSD მოცულობა | 512 GB |
+| უცნობი ველი | რაღაც |
+`;
+
+describe("parsePastedSpecificationTable", () => {
+  it("reads table rows and ignores headings and separators", () => {
+    const rows = parsePastedSpecificationTable(SAMPLE_PASTE);
+    assert.deepEqual(
+      rows.map((row) => row.name),
+      [
+        "ბრენდი",
+        "მოდელი/PN",
+        "ტიპი",
+        "პროცესორის მწარმოებელი",
+        "პროცესორის/ჩიპსეტის ტიპი",
+        "ბირთვების რაოდენობა",
+        "SSD მოცულობა",
+        "უცნობი ველი",
+      ],
+    );
+    assert.equal(rows.find((row) => row.name === "ბრენდი")?.value, "Microsoft");
+    assert.equal(rows.find((row) => row.name === "მოდელი/PN")?.value, "Xbox Series S");
+    assert.equal(
+      rows.some((row) => row.name === "პროცესორი" || row.name === "დაკავშირების შესაძლებლობა"),
+      false,
+    );
+  });
+
+  it("turns br tags into spaces or line breaks", () => {
+    const rows = parsePastedSpecificationTable("| აღწერა | პირველი<br>მეორე<br><br>მესამე |");
+    assert.equal(rows[0]?.value, "პირველი მეორე\nმესამე");
+  });
+});
+
+describe("applyPastedSpecifications", () => {
+  it("fills matching library specs and skips unknown names", () => {
+    const result = applyPastedSpecifications(
+      [{ key: "existing-brand", specificationId: "brand", specificationName: "ბრენდი", valueId: "old", value: "Sony" }],
+      parsePastedSpecificationTable(SAMPLE_PASTE),
+      [
+        { id: "brand", name: "ბრენდი", values: [{ id: "ms", name: "Microsoft" }] },
+        { id: "model", name: "მოდელი/PN", values: [] },
+        { id: "ssd", name: "SSD მოცულობა", values: [] },
+      ],
+    );
+
+    assert.equal(result.filled, 3);
+    assert.deepEqual(result.skipped, [
+      "ტიპი",
+      "პროცესორის მწარმოებელი",
+      "პროცესორის/ჩიპსეტის ტიპი",
+      "ბირთვების რაოდენობა",
+      "უცნობი ველი",
+    ]);
+    assert.equal(result.rows[0]?.value, "Microsoft");
+    assert.equal(result.rows[0]?.valueId, "ms");
+    assert.equal(result.rows.find((row) => row.specificationId === "model")?.value, "Xbox Series S");
+    assert.equal(result.rows.find((row) => row.specificationId === "ssd")?.value, "512 GB");
   });
 });
