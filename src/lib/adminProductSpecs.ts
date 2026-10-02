@@ -1,4 +1,4 @@
-import { reusableIdentityKey } from "@/lib/reusableLabel";
+import { normalizeReusableLabel, reusableIdentityKey } from "@/lib/reusableLabel";
 
 export type AdminProductSpecInput = {
   specificationId?: string;
@@ -100,7 +100,7 @@ function normalizePasteWhitespace(raw: string): string {
 }
 
 function cleanSpecName(raw: string): string {
-  return normalizePasteWhitespace(raw).replace(/\s+/g, " ").trim();
+  return normalizeReusableLabel(normalizePasteWhitespace(raw));
 }
 
 function cleanSpecValue(raw: string): string {
@@ -206,14 +206,14 @@ function pushPair(
   if (!name || !value) return;
 
   const identity = reusableIdentityKey(name);
-  const row: PastedSpecPair = { name, value };
   const prior = seen.get(identity);
   if (prior != null) {
-    pairs[prior] = row;
+    // Keep the first pasted spelling for create/display; take the latest value.
+    pairs[prior] = { name: pairs[prior]!.name, value };
     return;
   }
   seen.set(identity, pairs.length);
-  pairs.push(row);
+  pairs.push({ name, value });
 }
 
 /**
@@ -268,47 +268,128 @@ export function parsePastedSpecificationTable(raw: string): PastedSpecPair[] {
   return pairs;
 }
 
-export function applyPastedSpecifications(
-  current: EditorSpecRow[],
-  pasted: PastedSpecPair[],
-  definitions: SpecLibraryItem[],
-): { rows: EditorSpecRow[]; filled: number; skipped: string[] } {
+function indexDefinitionsByName(definitions: SpecLibraryItem[]): Map<string, SpecLibraryItem> {
   const byName = new Map<string, SpecLibraryItem>();
   for (const definition of definitions) {
     const key = reusableIdentityKey(definition.name);
     if (key && !byName.has(key)) byName.set(key, definition);
   }
+  return byName;
+}
 
-  const skipped: string[] = [];
-  const next = [...current];
-  let filled = 0;
+function upsertPastedRow(
+  rows: EditorSpecRow[],
+  definition: SpecLibraryItem,
+  value: string,
+): EditorSpecRow[] {
+  const valueOption =
+    definition.values.find((item) => reusableIdentityKey(item.name) === reusableIdentityKey(value)) ?? null;
+  const valueId = valueOption?.id ?? "";
+  const resolvedValue = valueOption?.name ?? value;
+  const existing = rows.findIndex((row) => row.specificationId === definition.id);
+  const updated: EditorSpecRow = {
+    key: existing >= 0 ? rows[existing]!.key : `spec-${definition.id}`,
+    specificationId: definition.id,
+    specificationName: definition.name,
+    valueId,
+    value: resolvedValue,
+  };
+  if (existing >= 0) {
+    const next = [...rows];
+    next[existing] = updated;
+    return next;
+  }
+  return [...rows, updated];
+}
+
+/**
+ * Fill product rows from pasted pairs using the current library only.
+ * Unknown names are returned in `missing` so the caller can create them.
+ */
+export function applyPastedSpecifications(
+  current: EditorSpecRow[],
+  pasted: PastedSpecPair[],
+  definitions: SpecLibraryItem[],
+): { rows: EditorSpecRow[]; matched: number; missing: PastedSpecPair[] } {
+  const byName = indexDefinitionsByName(definitions);
+  const missing: PastedSpecPair[] = [];
+  let rows = [...current];
+  let matched = 0;
 
   for (const pair of pasted) {
     const definition = byName.get(reusableIdentityKey(pair.name));
     if (!definition) {
-      skipped.push(pair.name);
+      missing.push(pair);
+      continue;
+    }
+    rows = upsertPastedRow(rows, definition, pair.value);
+    matched += 1;
+  }
+
+  return { rows, matched, missing };
+}
+
+export type ImportPastedSpecificationsResult = {
+  rows: EditorSpecRow[];
+  definitions: SpecLibraryItem[];
+  matched: number;
+  created: number;
+  failed: string[];
+};
+
+/**
+ * Match pasted names to the library; create any missing specification definitions,
+ * then fill product rows. Values are taken from the paste as-is (no value-library requirement).
+ */
+export async function importPastedSpecifications(
+  current: EditorSpecRow[],
+  pasted: PastedSpecPair[],
+  definitions: SpecLibraryItem[],
+  createSpecification: (name: string) => Promise<{ id: string; name: string } | null>,
+): Promise<ImportPastedSpecificationsResult> {
+  const byName = indexDefinitionsByName(definitions);
+  let nextDefinitions = [...definitions];
+  const createdIds = new Set<string>();
+  const failed: string[] = [];
+
+  const missingUnique = new Map<string, string>();
+  for (const pair of pasted) {
+    const key = reusableIdentityKey(pair.name);
+    if (!key || byName.has(key) || missingUnique.has(key)) continue;
+    missingUnique.set(key, pair.name);
+  }
+
+  for (const [key, name] of missingUnique) {
+    const created = await createSpecification(name);
+    if (!created) {
+      failed.push(name);
       continue;
     }
 
-    const valueOption =
-      definition.values.find((item) => reusableIdentityKey(item.name) === reusableIdentityKey(pair.value)) ??
-      null;
-    const valueId = valueOption?.id ?? "";
-    const value = valueOption?.name ?? pair.value;
-    const existing = next.findIndex((row) => row.specificationId === definition.id);
+    const alreadyLoaded = nextDefinitions.find((item) => item.id === created.id);
+    if (alreadyLoaded) {
+      byName.set(key, alreadyLoaded);
+      continue;
+    }
 
-    const updated: EditorSpecRow = {
-      key: existing >= 0 ? next[existing]!.key : `spec-${definition.id}`,
-      specificationId: definition.id,
-      specificationName: definition.name,
-      valueId,
-      value,
-    };
-
-    if (existing >= 0) next[existing] = updated;
-    else next.push(updated);
-    filled += 1;
+    const item: SpecLibraryItem = { id: created.id, name: created.name, values: [] };
+    nextDefinitions = [...nextDefinitions, item];
+    byName.set(key, item);
+    createdIds.add(created.id);
   }
 
-  return { rows: next, filled, skipped };
+  let rows = [...current];
+  let matched = 0;
+  let created = 0;
+
+  for (const pair of pasted) {
+    const definition = byName.get(reusableIdentityKey(pair.name));
+    if (!definition) continue;
+
+    rows = upsertPastedRow(rows, definition, pair.value);
+    if (createdIds.has(definition.id)) created += 1;
+    else matched += 1;
+  }
+
+  return { rows, definitions: nextDefinitions, matched, created, failed };
 }

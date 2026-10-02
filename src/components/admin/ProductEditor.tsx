@@ -18,7 +18,7 @@ import {
 } from "@/components/admin/adminUi";
 import { BADGE_KIND_OPTIONS } from "@/lib/adminLabels";
 import {
-  applyPastedSpecifications,
+  importPastedSpecifications,
   parsePastedSpecificationTable,
   planProductSpecifications,
   resolvePastedSpecificationText,
@@ -103,7 +103,8 @@ export function ProductEditor({ product, brands, categories, variantAttributes, 
   const [confirmRestore, setConfirmRestore] = useState(false);
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasteText, setPasteText] = useState("");
-  const [pasteResult, setPasteResult] = useState<{ filled: number; skipped: string[] } | null>(null);
+  const [pasteResult, setPasteResult] = useState<{ matched: number; created: number; failed: string[] } | null>(null);
+  const [pastePending, setPastePending] = useState(false);
 
   function patch<K extends keyof AdminProductEditorData>(key: K, value: AdminProductEditorData[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -598,16 +599,54 @@ export function ProductEditor({ product, brands, categories, variantAttributes, 
               <Button
                 type="button"
                 size="sm"
+                disabled={pastePending}
                 onClick={() => {
-                  // Always read the raw textarea value and match against the full
-                  // specification library — not only currently visible product rows.
                   const pasted = parsePastedSpecificationTable(pasteText);
-                  const result = applyPastedSpecifications(specRows, pasted, definitions);
-                  setSpecRows(result.rows);
-                  setPasteResult({ filled: result.filled, skipped: result.skipped });
+                  setPastePending(true);
+                  setMessage(null);
+                  void (async () => {
+                    try {
+                      const result = await importPastedSpecifications(
+                        specRows,
+                        pasted,
+                        definitions,
+                        async (name) => {
+                          const created = await createAdminSpecification({ name });
+                          if (!created.ok) {
+                            setMessage(created.message);
+                            return null;
+                          }
+                          return created.data;
+                        },
+                      );
+                      setDefinitions((current) => {
+                        const byId = new Map(current.map((item) => [item.id, item]));
+                        for (const item of result.definitions) {
+                          if (!byId.has(item.id)) {
+                            byId.set(item.id, {
+                              id: item.id,
+                              slug: "",
+                              name: item.name,
+                              unit: null,
+                              values: item.values,
+                            });
+                          }
+                        }
+                        return [...byId.values()];
+                      });
+                      setSpecRows(result.rows);
+                      setPasteResult({
+                        matched: result.matched,
+                        created: result.created,
+                        failed: result.failed,
+                      });
+                    } finally {
+                      setPastePending(false);
+                    }
+                  })();
                 }}
               >
-                შევსება
+                {pastePending ? "იგზავნება..." : "შევსება"}
               </Button>
               <Button
                 type="button"
@@ -624,11 +663,12 @@ export function ProductEditor({ product, brands, categories, variantAttributes, 
             {pasteResult ? (
               <div className="mt-3">
                 <p className="text-small text-text">
-                  შეივსო {pasteResult.filled} სპეციფიკაცია • {pasteResult.skipped.length} ვერ მოიძებნა
+                  შეივსო {pasteResult.matched} არსებული • შეიქმნა {pasteResult.created} ახალი
+                  {pasteResult.failed.length ? ` • ${pasteResult.failed.length} ვერ შეიქმნა` : ""}
                 </p>
-                {pasteResult.skipped.length ? (
+                {pasteResult.failed.length ? (
                   <ul className="text-small mt-1 list-disc pl-5 text-text-muted">
-                    {pasteResult.skipped.map((name) => (
+                    {pasteResult.failed.map((name) => (
                       <li key={name}>{name}</li>
                     ))}
                   </ul>
