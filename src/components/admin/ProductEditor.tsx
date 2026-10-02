@@ -17,7 +17,12 @@ import {
   adminTextareaClass,
 } from "@/components/admin/adminUi";
 import { BADGE_KIND_OPTIONS } from "@/lib/adminLabels";
-import { applyPastedSpecifications, parsePastedSpecificationTable, planProductSpecifications } from "@/lib/adminProductSpecs";
+import {
+  applyPastedSpecifications,
+  parsePastedSpecificationTable,
+  planProductSpecifications,
+  resolvePastedSpecificationText,
+} from "@/lib/adminProductSpecs";
 import { deactivateAdminProduct, restoreAdminProduct, saveAdminProduct, createAdminVariantOption, createAdminSpecification, createAdminSpecificationValue } from "@/server/actions/admin";
 import { AdminCreatableCombobox } from "@/components/admin/AdminCreatableCombobox";
 import { AdminProductDeleteButton } from "@/components/admin/AdminProductDeleteButton";
@@ -565,14 +570,28 @@ export function ProductEditor({ product, brands, categories, variantAttributes, 
         </div>
         {pasteOpen ? (
           <div className="mb-4 rounded-[var(--radius-sm)] border border-border bg-surface-2 p-3">
-            <FormField id="spec-paste" label="ჩასვით სპეციფიკაციები">
+            <FormField id="spec-paste" label="ჩასვით Markdown სპეციფიკაციები">
               <textarea
                 id="spec-paste"
                 value={pasteText}
                 onChange={(event) => setPasteText(event.target.value)}
-                className={adminTextareaClass}
-                rows={10}
-                placeholder={"##### ზოგადი ინფორმაცია\n\n| ბრენდი | Microsoft |\n| --------- | --------- |\n| მოდელი/PN | Xbox Series S |"}
+                onPaste={(event) => {
+                  const plain = event.clipboardData.getData("text/plain") || "";
+                  const html = event.clipboardData.getData("text/html") || "";
+                  const resolved = resolvePastedSpecificationText(plain, html);
+                  // Always control paste so React state keeps the exact markdown
+                  // (or recovered pipe tables) instead of a flattened browser insert.
+                  event.preventDefault();
+                  const target = event.currentTarget;
+                  const start = target.selectionStart ?? pasteText.length;
+                  const end = target.selectionEnd ?? pasteText.length;
+                  const next = `${pasteText.slice(0, start)}${resolved}${pasteText.slice(end)}`;
+                  setPasteText(next);
+                }}
+                spellCheck={false}
+                className={`${adminTextareaClass} font-mono whitespace-pre-wrap`}
+                rows={12}
+                placeholder={"| ბრენდი | Microsoft |\n| --------- | --------- |\n| მოდელი/PN | Xbox Series S |\n\n##### პროცესორი\n\n| პროცესორის მწარმოებელი | AMD |"}
               />
             </FormField>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -580,6 +599,8 @@ export function ProductEditor({ product, brands, categories, variantAttributes, 
                 type="button"
                 size="sm"
                 onClick={() => {
+                  // Always read the raw textarea value and match against the full
+                  // specification library — not only currently visible product rows.
                   const pasted = parsePastedSpecificationTable(pasteText);
                   const result = applyPastedSpecifications(specRows, pasted, definitions);
                   setSpecRows(result.rows);

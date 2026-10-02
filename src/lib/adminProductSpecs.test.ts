@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { applyPastedSpecifications, parsePastedSpecificationTable, planProductSpecifications } from "./adminProductSpecs";
+import {
+  applyPastedSpecifications,
+  parsePastedSpecificationTable,
+  planProductSpecifications,
+  resolvePastedSpecificationText,
+} from "./adminProductSpecs";
 
 describe("planProductSpecifications", () => {
   it("keeps complete rows and ignores blank rows", () => {
@@ -88,9 +93,58 @@ describe("parsePastedSpecificationTable", () => {
     );
   });
 
-  it("turns br tags into spaces or line breaks", () => {
+  it("turns br tags into normal spaces", () => {
     const rows = parsePastedSpecificationTable("| აღწერა | პირველი<br>მეორე<br><br>მესამე |");
-    assert.equal(rows[0]?.value, "პირველი მეორე\nმესამე");
+    assert.equal(rows[0]?.value, "პირველი მეორე მესამე");
+  });
+
+  it("ignores any # heading depth and --- separator variants", () => {
+    const rows = parsePastedSpecificationTable(`# ზოგადი
+## პროცესორი
+##### მეხსიერება
+
+| ბრენდი | Microsoft |
+| -------- | -------- |
+| მოდელი/PN | Xbox Series S |
+| --- | --- |
+| ტიპი | კონსოლი |
+`);
+    assert.deepEqual(
+      rows.map((row) => row.name),
+      ["ბრენდი", "მოდელი/PN", "ტიპი"],
+    );
+  });
+
+  it("parses clipboard-flattened pipe rows on a single line", () => {
+    const rows = parsePastedSpecificationTable(
+      "| ბრენდი | Microsoft | | --------- | --------- | | მოდელი/PN | Xbox Series S | | ტიპი | კონსოლი |",
+    );
+    assert.deepEqual(
+      rows.map((row) => [row.name, row.value]),
+      [
+        ["ბრენდი", "Microsoft"],
+        ["მოდელი/PN", "Xbox Series S"],
+        ["ტიპი", "კონსოლი"],
+      ],
+    );
+  });
+
+  it("parses tab-separated pairs when pipes were lost", () => {
+    const rows = parsePastedSpecificationTable("ბრენდი\tMicrosoft\nმოდელი/PN\tXbox Series S");
+    assert.deepEqual(
+      rows.map((row) => [row.name, row.value]),
+      [
+        ["ბრენდი", "Microsoft"],
+        ["მოდელი/PN", "Xbox Series S"],
+      ],
+    );
+  });
+});
+
+describe("resolvePastedSpecificationText", () => {
+  it("keeps exact markdown text/plain when pipes are present", () => {
+    const plain = "| ბრენდი | Microsoft |\n| --------- | --------- |\n| მოდელი/PN | Xbox |";
+    assert.equal(resolvePastedSpecificationText(plain, "<table><tr><td>x</td><td>y</td></tr></table>"), plain);
   });
 });
 
