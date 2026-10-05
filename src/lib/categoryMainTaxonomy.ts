@@ -44,7 +44,17 @@ export const MAIN_CATEGORY_TAXONOMY: MainCategoryPlan[] = [
     slug: "computers-and-components",
     iconKey: "monitor",
     children: [
-      { name: "პანელური კომპიუტერი | All-In-One", aliases: ["პანელური კომპიუტერი", "All-In-One", "All In One", "AIO"] },
+      {
+        name: "პანელური კომპიუტერი | All-In-One",
+        aliases: [
+          "პანელური კომპიუტერი",
+          "პანელური კომიუტერი | All-In-One",
+          "პანელური კომიუტერი",
+          "All-In-One",
+          "All In One",
+          "AIO",
+        ],
+      },
       { name: "ქეისები", aliases: ["ქეისი"] },
       { name: "პროცესორი", aliases: ["პროცესორები", "CPU"] },
       { name: "ქულერი", aliases: ["ქულერები"] },
