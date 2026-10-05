@@ -4,16 +4,20 @@ import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { FormField } from "@/components/ui/FormField";
 import { Button } from "@/components/ui/Button";
-import { adminCardClass, adminInputErrorClass } from "@/components/admin/adminUi";
+import { adminCardClass, adminInputErrorClass, adminSelectClass } from "@/components/admin/adminUi";
 import { saveAdminCategory } from "@/server/actions/admin";
 import { categorySlugFromName } from "@/lib/categorySlug";
+import { CATEGORY_ICON_OPTIONS } from "@/lib/categoryIcons";
+import type { AdminCategoryRow } from "@/server/admin/categories";
 
-export function CategoryQuickCreate() {
+export function CategoryQuickCreate({ mainCategories }: { mainCategories: AdminCategoryRow[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
+  const [parentId, setParentId] = useState("");
+  const [iconKey, setIconKey] = useState("");
   const [showInMainNav, setShowInMainNav] = useState(false);
   const [showOnHomepage, setShowOnHomepage] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -31,9 +35,9 @@ export function CategoryQuickCreate() {
     startTransition(async () => {
       const result = await saveAdminCategory({
         slug,
-        parentId: null,
+        parentId: parentId || null,
         imageUrl: "",
-        iconKey: "",
+        iconKey: parentId ? "" : iconKey,
         sortOrder: 0,
         isActive: true,
         indexable: true,
@@ -55,6 +59,8 @@ export function CategoryQuickCreate() {
       setName("");
       setSlug("");
       setSlugTouched(false);
+      setParentId("");
+      setIconKey("");
       setShowInMainNav(false);
       setShowOnHomepage(false);
       router.refresh();
@@ -66,7 +72,7 @@ export function CategoryQuickCreate() {
       <form onSubmit={submit} className="flex flex-col gap-3 p-4">
         <div>
           <h2 className="text-body font-semibold text-text">კატეგორიის დამატება</h2>
-          <p className="text-label text-text-faint">ახალი კატეგორია ემატება ფესვში. შემდეგ გადაათრიეთ სასურველ ადგილას.</p>
+          <p className="text-label text-text-faint">აირჩიეთ მშობელი მთავარი კატეგორია, ან დატოვეთ ცარიელი მთავარი კატეგორიისთვის.</p>
         </div>
         {message ? (
           <p role="alert" className="rounded-[var(--radius-sm)] bg-danger-50 px-3 py-2 text-small text-danger-600">
@@ -95,6 +101,33 @@ export function CategoryQuickCreate() {
               className={adminInputErrorClass(Boolean(fieldErrors.slug))}
             />
           </FormField>
+          <FormField id="quick-cat-parent" label="მშობელი კატეგორია">
+            <select
+              id="quick-cat-parent"
+              value={parentId}
+              onChange={(e) => setParentId(e.target.value)}
+              className={adminSelectClass}
+            >
+              <option value="">მთავარი კატეგორია (უმშობლო)</option>
+              {mainCategories.map((row) => (
+                <option key={row.id} value={row.id}>
+                  {row.name}
+                </option>
+              ))}
+            </select>
+          </FormField>
+          {!parentId ? (
+            <FormField id="quick-cat-icon" label="იკონი (მთავარი)">
+              <select id="quick-cat-icon" value={iconKey} onChange={(e) => setIconKey(e.target.value)} className={adminSelectClass}>
+                <option value="">—</option>
+                {CATEGORY_ICON_OPTIONS.map((option) => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-4 text-small text-text">
           <label className="inline-flex items-center gap-2">

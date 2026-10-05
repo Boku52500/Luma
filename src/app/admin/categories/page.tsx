@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/server/auth/admin";
 import { listAdminCategories } from "@/server/admin/categories";
 import { CategoryQuickCreate } from "@/components/admin/CategoryQuickCreate";
+import { CategoryOrganizeButton } from "@/components/admin/CategoryOrganizeButton";
 import { CategoryTreeManager } from "@/components/admin/CategoryTreeManager";
 
 export const metadata: Metadata = { title: "კატეგორიები" };
@@ -15,15 +16,16 @@ export default async function AdminCategoriesPage() {
       <div>
         <h1 className="text-2xl font-extrabold tracking-tight text-text">კატეგორიები</h1>
         <p className="text-small mt-1 text-text-muted">
-          {rows.length} კატეგორია · გადაათრიეთ იერარქიისა და რიგისთვის
+          {rows.length} კატეგორია · მთავარი → ქვეკატეგორია
         </p>
       </div>
-      <CategoryQuickCreate />
+      <CategoryOrganizeButton />
+      <CategoryQuickCreate mainCategories={rows.filter((row) => !row.parentId)} />
       <CategoryTreeManager
         key={rows
           .map(
             (row) =>
-              `${row.id}:${row.parentId ?? ""}:${row.sortOrder}:${row.productCount}:${row.archivedProductCount}`,
+              `${row.id}:${row.parentId ?? ""}:${row.sortOrder}:${row.productCount}:${row.totalProductCount}:${row.iconKey ?? ""}`,
           )
           .join("|")}
         initialRows={rows}

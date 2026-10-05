@@ -75,6 +75,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { normalizeMerchHref } from "@/lib/merchHref";
 import { revalidateCatalogue, revalidateHero, revalidateOrders, revalidatePromotions } from "@/server/admin/revalidate";
+import { organizeAdminCategoryTaxonomy } from "@/server/admin/categoryOrganize";
 
 function uniqueMessage(error: unknown): string | null {
   if (isUniqueConstraintError(error, "sku")) return "ეს SKU უკვე გამოიყენება";
@@ -990,6 +991,41 @@ export async function moveAdminCategoryTree(input: unknown): Promise<ActionResul
     return { ok: true };
   } catch (error) {
     logError("admin.move_category_tree_failed", { error });
+    return { ok: false, message: GENERIC_SERVER_ERROR };
+  }
+}
+
+/**
+ * Idempotent: create the planned main categories (if missing), assign icons,
+ * and reparent matching existing categories. Never deletes categories or products.
+ */
+export async function organizeAdminCategories(): Promise<
+  ActionResult<{
+    mainsCreated: number;
+    mainsReused: number;
+    moved: number;
+    unmatched: string[];
+    report: Awaited<ReturnType<typeof organizeAdminCategoryTaxonomy>>;
+  }>
+> {
+  const gate = await requireAdminAction();
+  if (!gate.ok) return gate;
+
+  try {
+    const report = await organizeAdminCategoryTaxonomy();
+    revalidateCatalogue();
+    return {
+      ok: true,
+      data: {
+        mainsCreated: report.mainsCreated.length,
+        mainsReused: report.mainsReused.length,
+        moved: report.moved.length,
+        unmatched: report.unmatched,
+        report,
+      },
+    };
+  } catch (error) {
+    logError("admin.organize_categories_failed", { error });
     return { ok: false, message: GENERIC_SERVER_ERROR };
   }
 }

@@ -17,8 +17,11 @@ export type AdminCategoryRow = {
   sortOrder: number;
   showInMainNav: boolean;
   navSortOrder: number;
+  iconKey: string | null;
   /** Direct live products (deletedAt == null). Shown as "N პროდუქტი". */
   productCount: number;
+  /** Live products in this category and all descendants. */
+  totalProductCount: number;
   /** Direct archived products that still hold categoryId and block delete. */
   archivedProductCount: number;
   childCount: number;
@@ -91,7 +94,7 @@ export async function listAdminCategories(): Promise<AdminCategoryRow[]> {
   const toRow = (
     category: (typeof categories)[number],
     depth: number,
-  ): AdminCategoryRow => ({
+  ): Omit<AdminCategoryRow, "totalProductCount"> => ({
     id: category.id,
     slug: category.slug,
     name: pickTranslation(category.translations).name,
@@ -101,13 +104,14 @@ export async function listAdminCategories(): Promise<AdminCategoryRow[]> {
     sortOrder: category.sortOrder,
     showInMainNav: category.showInMainNav,
     navSortOrder: category.navSortOrder,
+    iconKey: category.iconKey,
     productCount: category._count.products,
     archivedProductCount: archivedByCategory.get(category.id) ?? 0,
     childCount: byParent.get(category.id)?.length ?? 0,
     depth,
   });
 
-  const rows: AdminCategoryRow[] = [];
+  const rows: Omit<AdminCategoryRow, "totalProductCount">[] = [];
   const walk = (parentId: string | null, depth: number) => {
     for (const category of byParent.get(parentId) ?? []) {
       rows.push(toRow(category, depth));
@@ -122,7 +126,28 @@ export async function listAdminCategories(): Promise<AdminCategoryRow[]> {
     rows.push(toRow(category, 0));
   }
 
-  return rows;
+  const childrenByParent = new Map<string, string[]>();
+  for (const row of rows) {
+    if (!row.parentId) continue;
+    const list = childrenByParent.get(row.parentId) ?? [];
+    list.push(row.id);
+    childrenByParent.set(row.parentId, list);
+  }
+  const directCount = new Map(rows.map((row) => [row.id, row.productCount]));
+  const totalCache = new Map<string, number>();
+  const subtreeTotal = (id: string): number => {
+    const cached = totalCache.get(id);
+    if (cached != null) return cached;
+    let total = directCount.get(id) ?? 0;
+    for (const childId of childrenByParent.get(id) ?? []) total += subtreeTotal(childId);
+    totalCache.set(id, total);
+    return total;
+  };
+
+  return rows.map((row) => ({
+    ...row,
+    totalProductCount: subtreeTotal(row.id),
+  }));
 }
 
 export async function getAdminCategoryEditor(id: string): Promise<AdminCategoryEditorData | null> {

@@ -8,6 +8,7 @@ import { adminCardClass, adminInputErrorClass, adminSelectClass, adminTextareaCl
 import { saveAdminCategory, uploadAdminCategoryImage } from "@/server/actions/admin";
 import type { AdminCategoryEditorData, AdminCategoryRow } from "@/server/admin/categories";
 import { categorySlugFromName } from "@/lib/categorySlug";
+import { CATEGORY_ICON_OPTIONS, CategoryIcon } from "@/lib/categoryIcons";
 
 export function CategoryEditor({
   category,
@@ -41,7 +42,10 @@ export function CategoryEditor({
     };
     walk(form.id);
   }
-  const parentOptions = allCategories.filter((row) => row.id !== form.id && !descendantIds.has(row.id));
+  const parentOptions = allCategories.filter(
+    (row) => row.id !== form.id && !descendantIds.has(row.id) && !row.parentId,
+  );
+  const isMainCategory = !form.parentId;
 
   function onGeorgianNameChange(name: string) {
     setForm((c) => {
@@ -124,10 +128,9 @@ export function CategoryEditor({
           </FormField>
           <FormField id="cat-parent" label="მშობელი კატეგორია" optional error={fieldErrors.parentId}>
             <select id="cat-parent" value={form.parentId} onChange={(e) => setForm((c) => ({ ...c, parentId: e.target.value }))} className={adminSelectClass}>
-              <option value="">— ზედა დონე</option>
+              <option value="">მთავარი კატეგორია (უმშობლო)</option>
               {parentOptions.map((row) => (
                 <option key={row.id} value={row.id}>
-                  {"— ".repeat(row.depth)}
                   {row.name}
                 </option>
               ))}
@@ -176,9 +179,28 @@ export function CategoryEditor({
               </div>
             </FormField>
           ) : null}
-          <FormField id="cat-icon" label="იკონის გასაღები" optional>
-            <input id="cat-icon" value={form.iconKey} onChange={(e) => setForm((c) => ({ ...c, iconKey: e.target.value }))} className={adminInputErrorClass(false)} />
-          </FormField>
+          {isMainCategory ? (
+            <FormField id="cat-icon" label="იკონი (მთავარი კატეგორია)" optional>
+              <div className="flex items-center gap-3">
+                <select
+                  id="cat-icon"
+                  value={form.iconKey}
+                  onChange={(e) => setForm((c) => ({ ...c, iconKey: e.target.value }))}
+                  className={adminSelectClass}
+                >
+                  <option value="">—</option>
+                  {CATEGORY_ICON_OPTIONS.map((option) => (
+                    <option key={option.key} value={option.key}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {form.iconKey ? (
+                  <CategoryIcon slug={form.slug || "category"} iconKey={form.iconKey} className="size-6 text-brand-700" />
+                ) : null}
+              </div>
+            </FormField>
+          ) : null}
           <FormField id="cat-desc" label="აღწერა" optional className="sm:col-span-2">
             <textarea id="cat-desc" value={form.translations.ka.description} onChange={(e) => setForm((c) => ({ ...c, translations: { ...c.translations, ka: { ...c.translations.ka, description: e.target.value } } }))} className={adminTextareaClass} />
           </FormField>
