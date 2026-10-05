@@ -796,6 +796,8 @@ export async function deleteAdminCategory(input: unknown): Promise<ActionResult>
       id: true,
       slug: true,
       parentId: true,
+      // Include archived products here: they still reference categoryId, so delete
+      // must stay blocked even when the admin list count (non-archived) is 0.
       _count: { select: { products: true, children: true } },
     },
   });

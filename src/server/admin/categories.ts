@@ -61,7 +61,10 @@ export async function listAdminCategories(): Promise<AdminCategoryRow[]> {
     include: {
       translations: true,
       parent: { include: { translations: true } },
-      _count: { select: { products: true } },
+      // Count only current (non-archived) products on this exact categoryId.
+      // Soft-deleted rows still keep categoryId for order history, but must not
+      // inflate admin category product counts.
+      _count: { select: { products: { where: { deletedAt: null } } } },
     },
     orderBy: [{ sortOrder: "asc" }, { slug: "asc" }],
   });
