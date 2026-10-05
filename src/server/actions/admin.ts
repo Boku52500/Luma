@@ -16,14 +16,18 @@ import {
   adminOrderStatusSchema,
   adminProductImageAltSchema,
   adminProductImageReorderSchema,
+  adminProductIdsSchema,
+  adminProductPricesSchema,
   adminProductSaveSchema,
+  adminProductStockSchema,
+  adminBulkProductStockSchema,
   adminPromotionSaveSchema,
   adminSpecificationCreateSchema,
   adminSpecificationRenameSchema,
   adminSpecificationValueCreateSchema,
   adminVariantOptionCreateSchema,
 } from "@/server/validation/admin";
-import { parseMoneyInput } from "@/server/money";
+import { moneyToNumber, parseMoneyInput } from "@/server/money";
 import { categoryWouldCycle } from "@/server/admin/categories";
 import { productArchiveData, productRestoreData } from "@/server/admin/productArchive";
 import { createReusableVariantOption } from "@/server/admin/variantOptions";
@@ -464,6 +468,201 @@ export async function restoreAdminProduct(input: unknown): Promise<ActionResult>
   });
   revalidateCatalogue({ productSlug: product.slug, categorySlug: product.category.slug });
   return { ok: true };
+}
+
+async function loadProductsForBulk(ids: string[]) {
+  return prisma.product.findMany({
+    where: { id: { in: ids } },
+    select: {
+      id: true,
+      slug: true,
+      deletedAt: true,
+      category: { select: { slug: true } },
+    },
+  });
+}
+
+function revalidateBulkProducts(
+  products: { slug: string; category: { slug: string } }[],
+) {
+  revalidateCatalogue();
+  const seenCategories = new Set<string>();
+  for (const product of products.slice(0, 40)) {
+    revalidatePath(`/product/${product.slug}`);
+    if (!seenCategories.has(product.category.slug)) {
+      seenCategories.add(product.category.slug);
+      revalidatePath(`/category/${product.category.slug}`);
+    }
+  }
+}
+
+export async function updateAdminProductPrices(
+  input: unknown,
+): Promise<ActionResult<{ price: number; previousPrice: number | null }>> {
+  const gate = await requireAdminAction();
+  if (!gate.ok) return gate;
+  const parsed = adminProductPricesSchema.safeParse(input);
+  if (!parsed.success) {
+    const { message } = firstZodMessage(parsed.error);
+    return { ok: false, message };
+  }
+
+  const price = parseMoneyInput(parsed.data.price);
+  const previousPrice = parsed.data.previousPrice ? parseMoneyInput(parsed.data.previousPrice) : null;
+
+  const product = await prisma.product.findUnique({
+    where: { id: parsed.data.id },
+    select: { id: true, slug: true, category: { select: { slug: true } } },
+  });
+  if (!product) return { ok: false, message: "პროდუქტი ვერ მოიძებნა" };
+
+  await prisma.product.update({
+    where: { id: product.id },
+    data: { price, previousPrice },
+  });
+  revalidateCatalogue({ productSlug: product.slug, categorySlug: product.category.slug });
+  return {
+    ok: true,
+    data: {
+      price: moneyToNumber(price),
+      previousPrice: previousPrice ? moneyToNumber(previousPrice) : null,
+    },
+  };
+}
+
+export async function updateAdminProductStock(input: unknown): Promise<ActionResult<{ isActive: boolean }>> {
+  const gate = await requireAdminAction();
+  if (!gate.ok) return gate;
+  const parsed = adminProductStockSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: "პროდუქტი ვერ მოიძებნა" };
+
+  const product = await prisma.product.findUnique({
+    where: { id: parsed.data.id },
+    select: { id: true, slug: true, deletedAt: true, category: { select: { slug: true } } },
+  });
+  if (!product) return { ok: false, message: "პროდუქტი ვერ მოიძებნა" };
+  if (product.deletedAt) return { ok: false, message: "დაარქივებული პროდუქტის სტოკი ვერ შეიცვლება — ჯერ აღადგინეთ" };
+
+  const isActive = parsed.data.inStock;
+  await prisma.product.update({
+    where: { id: product.id },
+    data: {
+      isActive,
+      stockStatus: isActive ? "in-stock" : "out-of-stock",
+    },
+  });
+  revalidateCatalogue({ productSlug: product.slug, categorySlug: product.category.slug });
+  return { ok: true, data: { isActive } };
+}
+
+export async function bulkArchiveAdminProducts(input: unknown): Promise<ActionResult<{ count: number }>> {
+  const gate = await requireAdminAction();
+  if (!gate.ok) return gate;
+  const parsed = adminProductIdsSchema.safeParse(input);
+  if (!parsed.success) {
+    const { message } = firstZodMessage(parsed.error);
+    return { ok: false, message };
+  }
+
+  const products = await loadProductsForBulk(parsed.data.ids);
+  if (!products.length) return { ok: false, message: "პროდუქტები ვერ მოიძებნა" };
+
+  const ids = products.filter((row) => !row.deletedAt).map((row) => row.id);
+  if (ids.length) {
+    await prisma.product.updateMany({
+      where: { id: { in: ids } },
+      data: productArchiveData(),
+    });
+  }
+  revalidateBulkProducts(products);
+  return { ok: true, data: { count: ids.length } };
+}
+
+export async function bulkActivateAdminProducts(input: unknown): Promise<ActionResult<{ count: number }>> {
+  const gate = await requireAdminAction();
+  if (!gate.ok) return gate;
+  const parsed = adminProductIdsSchema.safeParse(input);
+  if (!parsed.success) {
+    const { message } = firstZodMessage(parsed.error);
+    return { ok: false, message };
+  }
+
+  const products = await loadProductsForBulk(parsed.data.ids);
+  if (!products.length) return { ok: false, message: "პროდუქტები ვერ მოიძებნა" };
+
+  await prisma.product.updateMany({
+    where: { id: { in: products.map((row) => row.id) } },
+    data: {
+      deletedAt: null,
+      isActive: true,
+      stockStatus: "in-stock",
+    },
+  });
+  revalidateBulkProducts(products);
+  return { ok: true, data: { count: products.length } };
+}
+
+export async function bulkSetAdminProductsStock(
+  input: unknown,
+): Promise<ActionResult<{ count: number }>> {
+  const gate = await requireAdminAction();
+  if (!gate.ok) return gate;
+  const parsed = adminBulkProductStockSchema.safeParse(input);
+  if (!parsed.success) {
+    const { message } = firstZodMessage(parsed.error);
+    return { ok: false, message };
+  }
+
+  const products = await loadProductsForBulk(parsed.data.ids);
+  if (!products.length) return { ok: false, message: "პროდუქტები ვერ მოიძებნა" };
+
+  const ids = products.filter((row) => !row.deletedAt).map((row) => row.id);
+  if (!ids.length) return { ok: false, message: "დაარქივებული პროდუქტების სტოკი ვერ შეიცვლება" };
+
+  const isActive = parsed.data.inStock;
+  await prisma.product.updateMany({
+    where: { id: { in: ids } },
+    data: {
+      isActive,
+      stockStatus: isActive ? "in-stock" : "out-of-stock",
+    },
+  });
+  revalidateBulkProducts(products.filter((row) => ids.includes(row.id)));
+  return { ok: true, data: { count: ids.length } };
+}
+
+/**
+ * Permanently delete products. OrderItem snapshots keep name/sku; productId is cleared
+ * so historical orders remain intact while the catalogue row is removed.
+ */
+export async function bulkDeleteAdminProducts(input: unknown): Promise<ActionResult<{ count: number }>> {
+  const gate = await requireAdminAction();
+  if (!gate.ok) return gate;
+  const parsed = adminProductIdsSchema.safeParse(input);
+  if (!parsed.success) {
+    const { message } = firstZodMessage(parsed.error);
+    return { ok: false, message };
+  }
+
+  const products = await loadProductsForBulk(parsed.data.ids);
+  if (!products.length) return { ok: false, message: "პროდუქტები ვერ მოიძებნა" };
+  const ids = products.map((row) => row.id);
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.orderItem.updateMany({
+        where: { productId: { in: ids } },
+        data: { productId: null, variantId: null },
+      });
+      await tx.product.deleteMany({ where: { id: { in: ids } } });
+    });
+  } catch (error) {
+    logError("admin.bulk_delete_products_failed", { error });
+    return { ok: false, message: "პროდუქტების წაშლა ვერ მოხერხდა — სცადეთ არქივში გადატანა" };
+  }
+
+  revalidateBulkProducts(products);
+  return { ok: true, data: { count: ids.length } };
 }
 
 export async function createAdminVariantOption(

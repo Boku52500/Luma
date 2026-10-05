@@ -258,6 +258,39 @@ export const adminIdSchema = z.object({
   id: z.string().trim().min(1),
 });
 
+export const adminProductIdsSchema = z.object({
+  ids: z.array(z.string().trim().min(1)).min(1, "აირჩიეთ პროდუქტი").max(100, "მაქსიმუმ 100 პროდუქტი ერთდროულად"),
+});
+
+export const adminProductStockSchema = z.object({
+  id: z.string().trim().min(1),
+  inStock: z.boolean(),
+});
+
+export const adminBulkProductStockSchema = z.object({
+  ids: z.array(z.string().trim().min(1)).min(1).max(100),
+  inStock: z.boolean(),
+});
+
+export const adminProductPricesSchema = z
+  .object({
+    id: z.string().trim().min(1),
+    price: moneyField("შეიყვანეთ ფასი"),
+    previousPrice: optionalMoneyField(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.previousPrice) return;
+    const current = Number(data.price.replace(",", "."));
+    const previous = Number(data.previousPrice.replace(",", "."));
+    if (Number.isFinite(current) && Number.isFinite(previous) && previous < current) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["previousPrice"],
+        message: "წინა ფასი უნდა იყოს მიმდინარე ფასზე მეტი ან ტოლი",
+      });
+    }
+  });
+
 export const adminReusableNameSchema = z.object({
   name: z
     .string()

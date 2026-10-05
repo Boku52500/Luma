@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { requireAdmin } from "@/server/auth/admin";
 import { listAdminFilterOptions, listAdminProducts } from "@/server/admin/products";
 import { Button } from "@/components/ui/Button";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { AdminProductsTable } from "@/components/admin/AdminProductsTable";
 import { adminInputClass, adminSelectClass } from "@/components/admin/adminUi";
-import { formatPrice } from "@/lib/utils";
-import { AdminProductDeleteButton } from "@/components/admin/AdminProductDeleteButton";
 
 export const metadata: Metadata = { title: "პროდუქტები" };
 
@@ -111,81 +109,18 @@ export default async function AdminProductsPage({
         </div>
       </form>
 
-      {rows.length === 0 ? (
-        <p className="text-small text-text-muted">პროდუქტები ამ ფილტრით ვერ მოიძებნა.</p>
-      ) : (
-        <div className="overflow-x-auto rounded-[var(--radius-md)] border border-border bg-surface">
-          <table className="w-full min-w-[860px] text-left text-small">
-            <thead className="bg-surface-2 text-label text-text-faint">
-              <tr>
-                <th className="px-3 py-2.5 font-medium">პროდუქტი</th>
-                <th className="px-3 py-2.5 font-medium">SKU</th>
-                <th className="px-3 py-2.5 font-medium">ბრენდი</th>
-                <th className="px-3 py-2.5 font-medium">კატეგორია</th>
-                <th className="px-3 py-2.5 font-medium">ფასი</th>
-                <th className="px-3 py-2.5 font-medium">ხელმისაწვდომობა</th>
-                <th className="px-3 py-2.5 font-medium"> </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} className="border-t border-border">
-                  <td className="px-3 py-2.5">
-                    <div className="flex items-center gap-3">
-                      <div className="size-12 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-surface-2">
-                        {row.imageUrl && (row.imageUrl.startsWith("http") || row.imageUrl.startsWith("/")) ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={row.imageUrl} alt={row.imageAlt} className="size-full object-cover" />
-                        ) : (
-                          <div className="size-full" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="line-clamp-2 font-medium text-text">{row.name}</p>
-                        {row.isFeatured || row.isNew || row.badgeLabel ? (
-                          <p className="text-label text-text-faint">
-                            {[row.isFeatured ? "რჩეული" : null, row.isNew ? "ახალი" : null, row.badgeLabel || null]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="tnum px-3 py-2.5">{row.sku}</td>
-                  <td className="px-3 py-2.5">{row.brandName}</td>
-                  <td className="px-3 py-2.5">{row.categoryName}</td>
-                  <td className="px-3 py-2.5">
-                    <span className="tnum font-medium">{formatPrice(row.price)}</span>
-                    {row.previousPrice != null ? (
-                      <span className="tnum block text-label text-text-faint line-through">{formatPrice(row.previousPrice)}</span>
-                    ) : null}
-                  </td>
-                  <td className="px-3 py-2.5">
-                    {row.deletedAt ? "არქივი" : row.isActive ? "ხელმისაწვდომია" : "გამოუწვდომელი"}
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <div className="flex flex-col items-start gap-1">
-                      <Link href={`/admin/products/${row.id}`} className="font-medium text-brand-700 hover:underline">
-                        რედაქტირება
-                      </Link>
-                      {!row.deletedAt ? (
-                        <AdminProductDeleteButton
-                          productId={row.id}
-                          productName={row.name}
-                          className="font-medium text-danger-600 hover:underline"
-                        />
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <AdminProductsTable key={rowsKey(rows)} initialRows={rows} />
 
       <AdminPagination page={page} totalPages={totalPages} hrefForPage={hrefForPage} />
     </div>
   );
+}
+
+function rowsKey(rows: { id: string; price: number; previousPrice: number | null; isActive: boolean; deletedAt: Date | null }[]) {
+  return rows
+    .map(
+      (row) =>
+        `${row.id}:${row.price}:${row.previousPrice ?? ""}:${row.isActive ? 1 : 0}:${row.deletedAt ? 1 : 0}`,
+    )
+    .join("|");
 }
