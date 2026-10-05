@@ -207,7 +207,19 @@ function SortableCategoryRow({
           <div className="truncate font-medium text-text">{row.name}</div>
           <div className="text-label truncate text-text-faint">{row.slug}</div>
         </div>
-        <div className="tnum text-small shrink-0 text-text-muted">{row.productCount} პროდუქტი</div>
+        <div className="tnum text-small shrink-0 text-right text-text-muted">
+          <div>
+            {row.productCount} პროდუქტი
+            {row.archivedProductCount > 0 ? (
+              <Link
+                href={`/admin/products?category=${row.id}&active=archived`}
+                className="block text-text-faint hover:text-brand-700 hover:underline"
+              >
+                · {row.archivedProductCount} არქივში
+              </Link>
+            ) : null}
+          </div>
+        </div>
         <Link
           href={`/admin/categories/${row.id}`}
           className="text-small shrink-0 font-medium text-brand-700 hover:underline"
@@ -328,8 +340,15 @@ export function CategoryTreeManager({ initialRows }: { initialRows: AdminCategor
       setMessage("ჯერ გადაიტანეთ ქვეკატეგორიები, შემდეგ წაშალეთ");
       return;
     }
-    if (row.productCount > 0) {
-      setMessage("კატეგორიას აქვს პროდუქტები — ჯერ გადაიტანეთ პროდუქტები");
+    const assignedCount = row.productCount + row.archivedProductCount;
+    if (assignedCount > 0) {
+      if (row.productCount === 0 && row.archivedProductCount > 0) {
+        setMessage(
+          `კატეგორიას აქვს ${row.archivedProductCount} დაარქივებული პროდუქტი — გადაიტანეთ ან აღადგინეთ Admin → პროდუქტები → არქივი (კატეგორიის ფილტრი).`,
+        );
+      } else {
+        setMessage("კატეგორიას აქვს პროდუქტები — ჯერ გადაიტანეთ პროდუქტები");
+      }
       return;
     }
     if (!window.confirm(`წავშალოთ „${row.name}”?`)) return;

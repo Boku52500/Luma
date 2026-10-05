@@ -20,7 +20,12 @@ export default async function AdminCategoriesPage() {
       </div>
       <CategoryQuickCreate />
       <CategoryTreeManager
-        key={rows.map((row) => `${row.id}:${row.parentId ?? ""}:${row.sortOrder}`).join("|")}
+        key={rows
+          .map(
+            (row) =>
+              `${row.id}:${row.parentId ?? ""}:${row.sortOrder}:${row.productCount}:${row.archivedProductCount}`,
+          )
+          .join("|")}
         initialRows={rows}
       />
     </div>

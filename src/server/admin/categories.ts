@@ -2,6 +2,10 @@ import "server-only";
 
 import { prisma } from "@/server/db";
 import { pickTranslation } from "@/server/locale";
+import {
+  archivedProductCountsByCategory,
+  categoryLiveProductWhere,
+} from "@/server/admin/categoryProductAssignment";
 
 export type AdminCategoryRow = {
   id: string;
@@ -13,7 +17,10 @@ export type AdminCategoryRow = {
   sortOrder: number;
   showInMainNav: boolean;
   navSortOrder: number;
+  /** Direct live products (deletedAt == null). Shown as "N პროდუქტი". */
   productCount: number;
+  /** Direct archived products that still hold categoryId and block delete. */
+  archivedProductCount: number;
   childCount: number;
   depth: number;
 };
@@ -57,17 +64,18 @@ function copyFrom(
 }
 
 export async function listAdminCategories(): Promise<AdminCategoryRow[]> {
-  const categories = await prisma.category.findMany({
-    include: {
-      translations: true,
-      parent: { include: { translations: true } },
-      // Count only current (non-archived) products on this exact categoryId.
-      // Soft-deleted rows still keep categoryId for order history, but must not
-      // inflate admin category product counts.
-      _count: { select: { products: { where: { deletedAt: null } } } },
-    },
-    orderBy: [{ sortOrder: "asc" }, { slug: "asc" }],
-  });
+  const [categories, archivedByCategory] = await Promise.all([
+    prisma.category.findMany({
+      include: {
+        translations: true,
+        parent: { include: { translations: true } },
+        // Exact categoryId only — no child rollup. Live products match Admin → Products.
+        _count: { select: { products: { where: categoryLiveProductWhere } } },
+      },
+      orderBy: [{ sortOrder: "asc" }, { slug: "asc" }],
+    }),
+    archivedProductCountsByCategory(),
+  ]);
 
   const byParent = new Map<string | null, typeof categories>();
   for (const category of categories) {
@@ -80,23 +88,29 @@ export async function listAdminCategories(): Promise<AdminCategoryRow[]> {
     list.sort((a, b) => a.sortOrder - b.sortOrder || a.slug.localeCompare(b.slug));
   }
 
+  const toRow = (
+    category: (typeof categories)[number],
+    depth: number,
+  ): AdminCategoryRow => ({
+    id: category.id,
+    slug: category.slug,
+    name: pickTranslation(category.translations).name,
+    parentId: category.parentId,
+    parentName: category.parent ? pickTranslation(category.parent.translations).name : null,
+    isActive: category.isActive,
+    sortOrder: category.sortOrder,
+    showInMainNav: category.showInMainNav,
+    navSortOrder: category.navSortOrder,
+    productCount: category._count.products,
+    archivedProductCount: archivedByCategory.get(category.id) ?? 0,
+    childCount: byParent.get(category.id)?.length ?? 0,
+    depth,
+  });
+
   const rows: AdminCategoryRow[] = [];
   const walk = (parentId: string | null, depth: number) => {
     for (const category of byParent.get(parentId) ?? []) {
-      rows.push({
-        id: category.id,
-        slug: category.slug,
-        name: pickTranslation(category.translations).name,
-        parentId: category.parentId,
-        parentName: category.parent ? pickTranslation(category.parent.translations).name : null,
-        isActive: category.isActive,
-        sortOrder: category.sortOrder,
-        showInMainNav: category.showInMainNav,
-        navSortOrder: category.navSortOrder,
-        productCount: category._count.products,
-        childCount: byParent.get(category.id)?.length ?? 0,
-        depth,
-      });
+      rows.push(toRow(category, depth));
       walk(category.id, depth + 1);
     }
   };
@@ -105,20 +119,7 @@ export async function listAdminCategories(): Promise<AdminCategoryRow[]> {
   const seen = new Set(rows.map((row) => row.id));
   for (const category of categories) {
     if (seen.has(category.id)) continue;
-    rows.push({
-      id: category.id,
-      slug: category.slug,
-      name: pickTranslation(category.translations).name,
-      parentId: category.parentId,
-      parentName: category.parent ? pickTranslation(category.parent.translations).name : null,
-      isActive: category.isActive,
-      sortOrder: category.sortOrder,
-      showInMainNav: category.showInMainNav,
-      navSortOrder: category.navSortOrder,
-      productCount: category._count.products,
-      childCount: byParent.get(category.id)?.length ?? 0,
-      depth: 0,
-    });
+    rows.push(toRow(category, 0));
   }
 
   return rows;

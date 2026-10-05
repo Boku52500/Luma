@@ -21,6 +21,8 @@ export function revalidateCatalogue(opts?: { productSlug?: string; categorySlug?
   revalidatePath("/category/[slug]", "page");
   revalidatePath("/brand/[slug]", "page");
   revalidatePath("/admin", "layout");
+  revalidatePath("/admin/products", "layout");
+  revalidatePath("/admin/categories", "layout");
   if (opts?.productSlug) revalidatePath(`/product/${opts.productSlug}`);
   if (opts?.categorySlug) revalidatePath(`/category/${opts.categorySlug}`);
   if (opts?.brandSlug) {

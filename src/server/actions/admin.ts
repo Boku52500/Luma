@@ -35,6 +35,8 @@ import {
   isCanonicalCategorySlug,
 } from "@/lib/categorySlug";
 import { canDeleteCategory, planCategoryTreeMove } from "@/lib/categoryTree";
+import { formatCategoryProductDeleteBlock } from "@/lib/categoryProductAssignment";
+import { getCategoryProductAssignment } from "@/server/admin/categoryProductAssignment";
 import {
   createSpecWriteCache,
   deleteUnusedSpecificationDefinition,
@@ -174,9 +176,15 @@ export async function saveAdminProduct(input: unknown): Promise<ActionResult<{ i
   const stockStatus = data.isActive ? "in-stock" : "out-of-stock";
 
   try {
-    const [brand, category] = await Promise.all([
+    const [brand, category, existingProduct] = await Promise.all([
       prisma.brand.findUnique({ where: { id: data.brandId }, select: { id: true } }),
-      prisma.category.findUnique({ where: { id: data.categoryId }, select: { id: true } }),
+      prisma.category.findUnique({ where: { id: data.categoryId }, select: { id: true, slug: true } }),
+      data.id
+        ? prisma.product.findUnique({
+            where: { id: data.id },
+            select: { categoryId: true, category: { select: { slug: true } } },
+          })
+        : Promise.resolve(null),
     ]);
     if (!brand) return { ok: false, message: "ბრენდი ვერ მოიძებნა", fieldErrors: { brandId: "აირჩიეთ არსებული ბრენდი" } };
     if (!category) {
@@ -378,7 +386,10 @@ export async function saveAdminProduct(input: unknown): Promise<ActionResult<{ i
       }
     }
 
-    revalidateCatalogue({ productSlug: data.slug });
+    revalidateCatalogue({ productSlug: data.slug, categorySlug: category.slug });
+    if (existingProduct?.category.slug && existingProduct.category.slug !== category.slug) {
+      revalidateCatalogue({ categorySlug: existingProduct.category.slug });
+    }
     return { ok: true, data: { id: saved.id } };
   } catch (error) {
     if (error instanceof Error && error.message === "INVALID_VARIANT_OPTION") {
@@ -422,7 +433,7 @@ export async function archiveAdminProduct(input: unknown): Promise<ActionResult>
 
   const product = await prisma.product.findUnique({
     where: { id: parsed.data.id },
-    select: { id: true, slug: true, deletedAt: true },
+    select: { id: true, slug: true, deletedAt: true, category: { select: { slug: true } } },
   });
   if (!product) return { ok: false, message: "პროდუქტი ვერ მოიძებნა" };
   if (product.deletedAt) return { ok: true };
@@ -431,7 +442,7 @@ export async function archiveAdminProduct(input: unknown): Promise<ActionResult>
     where: { id: product.id },
     data: productArchiveData(),
   });
-  revalidateCatalogue({ productSlug: product.slug });
+  revalidateCatalogue({ productSlug: product.slug, categorySlug: product.category.slug });
   return { ok: true };
 }
 
@@ -443,7 +454,7 @@ export async function restoreAdminProduct(input: unknown): Promise<ActionResult>
 
   const product = await prisma.product.findUnique({
     where: { id: parsed.data.id },
-    select: { id: true, slug: true },
+    select: { id: true, slug: true, category: { select: { slug: true } } },
   });
   if (!product) return { ok: false, message: "პროდუქტი ვერ მოიძებნა" };
 
@@ -451,7 +462,7 @@ export async function restoreAdminProduct(input: unknown): Promise<ActionResult>
     where: { id: product.id },
     data: productRestoreData(),
   });
-  revalidateCatalogue({ productSlug: product.slug });
+  revalidateCatalogue({ productSlug: product.slug, categorySlug: product.category.slug });
   return { ok: true };
 }
 
@@ -796,18 +807,23 @@ export async function deleteAdminCategory(input: unknown): Promise<ActionResult>
       id: true,
       slug: true,
       parentId: true,
-      // Include archived products here: they still reference categoryId, so delete
-      // must stay blocked even when the admin list count (non-archived) is 0.
-      _count: { select: { products: true, children: true } },
+      _count: { select: { children: true } },
     },
   });
   if (!category) return { ok: false, message: "კატეგორია ვერ მოიძებნა" };
 
+  // Same assignment helper as the category list: live + archived on this categoryId.
+  const assignment = await getCategoryProductAssignment(category.id);
   const check = canDeleteCategory({
     childCount: category._count.children,
-    productCount: category._count.products,
+    productCount: assignment.assignedCount,
   });
-  if (!check.ok) return { ok: false, message: check.message };
+  if (!check.ok) {
+    if (check.code === "HAS_PRODUCTS") {
+      return { ok: false, message: formatCategoryProductDeleteBlock(assignment) };
+    }
+    return { ok: false, message: check.message };
+  }
 
   try {
     await prisma.$transaction(async (tx) => {
