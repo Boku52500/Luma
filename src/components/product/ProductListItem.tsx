@@ -18,6 +18,8 @@ export function ProductListItem({ product, className }: { product: Product; clas
   const outOfStock = product.availability === "out-of-stock";
   const href = `/product/${product.slug}`;
   const prefetch = () => router.prefetch(href);
+  const primaryPhoto = product.images?.find((image) => image.src);
+  const hoverPhoto = product.images?.find((image) => image.src && image.src !== primaryPhoto?.src);
 
   return (
     <div
@@ -32,7 +34,11 @@ export function ProductListItem({ product, className }: { product: Product; clas
             visual={product.visual}
             tone={product.tone}
             hoverVisual={product.secondaryVisual}
-            className="rounded-[var(--radius-md)] bg-surface-2/40 transition-transform duration-300 group-hover:scale-[1.02]"
+            src={primaryPhoto?.src}
+            alt={primaryPhoto?.alt || product.name}
+            hoverSrc={hoverPhoto?.src}
+            sizes="176px"
+            className="rounded-[var(--radius-md)] bg-surface-2/40 transition-transform duration-200 group-hover:scale-[1.02]"
           />
         </Link>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import type { Product } from "@/types/product";
 import type { CartLineItem, CartProductSnapshot, CartVariantLabel } from "@/lib/productSnapshots";
 import { cartStore } from "@/lib/cartStore";
@@ -37,6 +37,35 @@ function resolveLine(item: CartLineItem): ResolvedCartLine {
   };
 }
 
+const imageHydrationAttempted = new Set<string>();
+
+async function hydrateMissingCartImages(items: CartLineItem[]) {
+  const missingIds = [
+    ...new Set(
+      items
+        .filter((item) => !item.snapshot.imageSrc && !imageHydrationAttempted.has(item.productId))
+        .map((item) => item.productId),
+    ),
+  ];
+  if (missingIds.length === 0) return;
+  for (const id of missingIds) imageHydrationAttempted.add(id);
+
+  try {
+    const response = await fetch(`/api/cart/product-images?ids=${encodeURIComponent(missingIds.join(","))}`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!response.ok) return;
+    const data = (await response.json()) as { images?: Record<string, { src: string; alt?: string }> };
+    if (data.images && Object.keys(data.images).length > 0) {
+      cartStore.hydrateImages(data.images);
+    }
+  } catch {
+    // Offline / transient — keep illustration fallback until next opportunity.
+  }
+}
+
 /**
  * The single hook every surface (header badge, mini-cart, `/cart` page,
  * add-to-cart buttons) uses to read and mutate the cart.
@@ -49,9 +78,13 @@ function resolveLine(item: CartLineItem): ResolvedCartLine {
 export function useCart() {
   const rawItems = useSyncExternalStore(cartStore.subscribe, cartStore.getSnapshot, cartStore.getServerSnapshot);
 
+  useEffect(() => {
+    void hydrateMissingCartImages(rawItems);
+  }, [rawItems]);
+
   const items = useMemo<ResolvedCartLine[]>(
     () => rawItems.map(resolveLine).sort((a, b) => a.addedAt - b.addedAt),
-    [rawItems]
+    [rawItems],
   );
 
   const count = useMemo(() => getCartItemCount(items), [items]);

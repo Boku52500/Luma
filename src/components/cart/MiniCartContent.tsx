@@ -32,7 +32,14 @@ export function MiniCartContent({
 
       <div className="overflow-y-auto px-4 py-4 sm:px-5">
         <div className="flex gap-3 rounded-[var(--radius-md)] border border-border bg-surface-2/60 p-3">
-          <ProductImage visual={snapshot.visual} tone={snapshot.tone} className="size-16 shrink-0 sm:size-[4.5rem]" />
+          <ProductImage
+            visual={snapshot.visual}
+            tone={snapshot.tone}
+            src={snapshot.imageSrc}
+            alt={snapshot.imageAlt || snapshot.name}
+            sizes="72px"
+            className="size-16 shrink-0 sm:size-[4.5rem]"
+          />
           <div className="min-w-0 flex-1">
             <p className="text-label text-text-faint">{snapshot.brand}</p>
             <p className="text-small line-clamp-2 font-semibold leading-snug text-text">{snapshot.name}</p>

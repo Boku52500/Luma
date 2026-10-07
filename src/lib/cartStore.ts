@@ -5,6 +5,9 @@
  * taken at add time so the mini-cart, `/cart`, and checkout can render
  * without consulting `src/data` or PostgreSQL.
  *
+ * Snapshot includes unit price plus the primary product image URL when available.
+ * Legacy lines without `imageSrc` are backfilled via `/api/cart/product-images`.
+ *
  * `snapshot.unitPrice` is the displayed price when the user added the line —
  * not payment-authoritative. A future server checkout must revalidate
  * against PostgreSQL before creating a real order.
@@ -107,9 +110,16 @@ function addItem(product: Product, quantity = 1, variants?: Record<string, strin
   if (existingIndex >= 0) {
     const next = current.slice();
     const existing = next[existingIndex];
+    const mappedSnapshot = mapped.snapshot;
     next[existingIndex] = {
       ...existing,
       quantity: clampQuantity(existing.quantity + quantity),
+      // Backfill photo on re-add when an older line was saved without imageSrc.
+      snapshot: {
+        ...existing.snapshot,
+        imageSrc: existing.snapshot.imageSrc || mappedSnapshot.imageSrc,
+        imageAlt: existing.snapshot.imageAlt || mappedSnapshot.imageAlt,
+      },
     };
     writeStorage(next);
     return next[existingIndex];
@@ -147,6 +157,27 @@ function clear() {
   writeStorage([]);
 }
 
+/** Patch missing primary photos onto legacy cart lines (localStorage v2 without imageSrc). */
+function hydrateImages(images: Record<string, { src: string; alt?: string }>) {
+  const current = getSnapshot();
+  let changed = false;
+  const next = current.map((line) => {
+    if (line.snapshot.imageSrc) return line;
+    const image = images[line.productId];
+    if (!image?.src) return line;
+    changed = true;
+    return {
+      ...line,
+      snapshot: {
+        ...line.snapshot,
+        imageSrc: image.src,
+        imageAlt: image.alt || line.snapshot.name,
+      },
+    };
+  });
+  if (changed) writeStorage(next);
+}
+
 export const cartStore = {
   subscribe,
   getSnapshot,
@@ -155,5 +186,6 @@ export const cartStore = {
   setQuantity,
   removeItem,
   clear,
+  hydrateImages,
   buildLineId,
 };

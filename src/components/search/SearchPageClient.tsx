@@ -11,6 +11,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductListItem } from "@/components/product/ProductListItem";
+import { useScrollListingOnPageChange } from "@/hooks/useScrollListingOnPageChange";
 import { FilterSidebar } from "@/components/category/FilterSidebar";
 import { FilterDrawer } from "@/components/category/FilterDrawer";
 import { FilterChips } from "@/components/category/FilterChips";
@@ -113,6 +114,7 @@ export function SearchPageClient({
   const [view, setView] = useState<ViewMode>("grid");
   const [page, setPage] = useState(1);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const listRef = useScrollListingOnPageChange(page);
 
   const filtered = useMemo(() => applyFilters(products, filters), [products, filters]);
   const sorted = useMemo(() => sortProducts(filtered, sort), [filtered, sort]);
@@ -154,7 +156,10 @@ export function SearchPageClient({
           <p className="text-small tnum mt-2 text-text-faint">ნაპოვნია {products.length} პროდუქტი</p>
         </div>
 
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
+        <div
+          ref={listRef}
+          className="mb-5 scroll-mt-28 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5 sm:scroll-mt-32"
+        >
           <div className="flex items-center gap-3">
             <button
               type="button"

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   Smartphone,
   Laptop,
@@ -17,11 +18,8 @@ import { cn } from "@/lib/utils";
 import type { ProductVisual } from "@/types/product";
 
 /**
- * Temporary, brand-consistent stand-in for real product photography.
- * Renders a soft tinted "stage" with a representative line icon so the
- * homepage never ships obvious gray placeholder boxes. Swap the inner
- * markup for a real <Image> once a product-photo pipeline exists — the
- * outer aspect-ratio contract stays the same.
+ * Product photo when `src` is present; otherwise a brand-consistent Lucide
+ * illustration fallback (used when a product has no primary image).
  */
 
 export const iconByVisual: Record<ProductVisual, LucideIcon> = {
@@ -55,6 +53,7 @@ export function ProductImage({
   alt = "",
   hoverSrc,
   fill = false,
+  sizes = "(max-width: 640px) 50vw, 220px",
   className,
 }: {
   visual: ProductVisual;
@@ -70,6 +69,7 @@ export function ProductImage({
   hoverSrc?: string;
   /** When true, fills the parent's height instead of forcing a square. */
   fill?: boolean;
+  sizes?: string;
   className?: string;
 }) {
   const Icon = iconByVisual[visual];
@@ -85,23 +85,21 @@ export function ProductImage({
           className,
         )}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={src}
           alt={alt}
-          loading="lazy"
-          decoding="async"
-          className={cn("size-full object-contain", hoverSrc && "transition-opacity duration-300 group-hover:opacity-0")}
+          fill
+          sizes={sizes}
+          className={cn("object-contain", hoverSrc && "transition-opacity duration-200 group-hover:opacity-0")}
         />
         {hoverSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={hoverSrc}
             alt=""
             aria-hidden
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 size-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            fill
+            sizes={sizes}
+            className="object-contain opacity-0 transition-opacity duration-200 group-hover:opacity-100"
           />
         ) : null}
       </div>
@@ -114,14 +112,14 @@ export function ProductImage({
         "relative flex w-full items-center justify-center overflow-hidden rounded-[var(--radius-md)]",
         fill ? "h-full" : "aspect-square",
         t.bg,
-        className
+        className,
       )}
     >
       <div
         className={cn(
-          "flex size-[62%] items-center justify-center rounded-full transition-opacity duration-300",
+          "flex size-[62%] items-center justify-center rounded-full transition-opacity duration-200",
           t.plate,
-          HoverIcon && "group-hover:opacity-0"
+          HoverIcon && "group-hover:opacity-0",
         )}
       >
         <Icon className={cn("h-[42%] w-[42%]", t.icon)} strokeWidth={1.35} />
@@ -131,8 +129,8 @@ export function ProductImage({
         <div
           aria-hidden
           className={cn(
-            "absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100",
-            t.bg
+            "absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200 group-hover:opacity-100",
+            t.bg,
           )}
         >
           <div className={cn("flex size-[62%] items-center justify-center rounded-full", t.plate)}>

@@ -40,7 +40,7 @@ export function CartLineCard({
     return (
       <div className="flex gap-3 py-4">
         <Link href={href} className="block shrink-0" aria-hidden tabIndex={-1}>
-          <ProductImage visual={snapshot.visual} tone={snapshot.tone} className="size-[4.5rem]" />
+          <ProductImage visual={snapshot.visual} tone={snapshot.tone} src={snapshot.imageSrc} alt={snapshot.imageAlt || snapshot.name} sizes="72px" className="size-[4.5rem]" />
         </Link>
 
         <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -86,7 +86,7 @@ export function CartLineCard({
   return (
     <div className="flex flex-col gap-4 rounded-[var(--radius-md)] border border-border bg-surface p-4 sm:flex-row sm:gap-5">
       <Link href={href} className="mx-auto block w-28 shrink-0 sm:mx-0" aria-hidden tabIndex={-1}>
-        <ProductImage visual={snapshot.visual} tone={snapshot.tone} />
+        <ProductImage visual={snapshot.visual} tone={snapshot.tone} src={snapshot.imageSrc} alt={snapshot.imageAlt || snapshot.name} sizes="112px" />
       </Link>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">

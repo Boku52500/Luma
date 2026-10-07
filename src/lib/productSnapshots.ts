@@ -44,6 +44,9 @@ export type CartProductSnapshot = {
   brand: string;
   visual: ProductVisual;
   tone: 1 | 2 | 3 | 4 | 5;
+  /** Primary product photo URL (R2/public). Optional for legacy localStorage carts. */
+  imageSrc?: string;
+  imageAlt?: string;
   unitPrice: number;
   previousPrice?: number;
   availability: ProductAvailability;
@@ -151,9 +154,17 @@ function parseVariantLabels(value: unknown): CartVariantLabel[] {
   return labels;
 }
 
+export function primaryProductImage(product: Product): { src?: string; alt?: string } {
+  const photo = product.images?.find((image) => typeof image.src === "string" && image.src.trim());
+  if (!photo?.src) return {};
+  const alt = asNonEmptyString(photo.alt) ?? product.name;
+  return { src: photo.src.trim(), alt };
+}
+
 export function toCartProductSnapshot(product: Product): CartProductSnapshot {
   const unitPrice = asMoney(product.price) ?? 0;
   const previousPrice = product.previousPrice == null ? undefined : (asMoney(product.previousPrice) ?? undefined);
+  const image = primaryProductImage(product);
   return {
     productId: product.id,
     slug: product.slug,
@@ -161,6 +172,8 @@ export function toCartProductSnapshot(product: Product): CartProductSnapshot {
     brand: product.brand,
     visual: asVisual(product.visual),
     tone: asTone(product.tone),
+    imageSrc: image.src,
+    imageAlt: image.alt,
     unitPrice,
     previousPrice,
     availability: asAvailability(product.availability),
@@ -177,6 +190,8 @@ export function parseCartProductSnapshot(value: unknown): CartProductSnapshot | 
   const unitPrice = asMoney(record.unitPrice);
   if (!productId || !slug || !name || !brand || unitPrice == null) return null;
   const previousPrice = record.previousPrice == null ? undefined : (asMoney(record.previousPrice) ?? undefined);
+  const imageSrc = asNonEmptyString(record.imageSrc) ?? undefined;
+  const imageAlt = asNonEmptyString(record.imageAlt) ?? undefined;
   return {
     productId,
     slug,
@@ -184,6 +199,8 @@ export function parseCartProductSnapshot(value: unknown): CartProductSnapshot | 
     brand,
     visual: asVisual(record.visual),
     tone: asTone(record.tone),
+    imageSrc,
+    imageAlt,
     unitPrice,
     previousPrice,
     availability: asAvailability(record.availability),

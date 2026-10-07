@@ -8,6 +8,7 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { Pagination } from "@/components/ui/Pagination";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductListItem } from "@/components/product/ProductListItem";
+import { useScrollListingOnPageChange } from "@/hooks/useScrollListingOnPageChange";
 import { FilterSidebar } from "./FilterSidebar";
 import { FilterDrawer } from "./FilterDrawer";
 import { FilterChips } from "./FilterChips";
@@ -31,6 +32,7 @@ export function CategoryPageClient({ category, products }: { category: Category;
   const [view, setView] = useState<ViewMode>("grid");
   const [page, setPage] = useState(1);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const listRef = useScrollListingOnPageChange(page);
 
   const filtered = useMemo(() => applyFilters(products, filters), [products, filters]);
   const sorted = useMemo(() => sortProducts(filtered, sort), [filtered, sort]);
@@ -73,7 +75,10 @@ export function CategoryPageClient({ category, products }: { category: Category;
           </p>
         </div>
 
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-border bg-surface px-3 py-3 sm:px-4">
+        <div
+          ref={listRef}
+          className="mb-5 scroll-mt-28 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-border bg-surface px-3 py-3 sm:scroll-mt-32 sm:px-4"
+        >
           <div className="flex items-center gap-3">
             <button
               type="button"

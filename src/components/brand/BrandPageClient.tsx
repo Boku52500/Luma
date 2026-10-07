@@ -12,6 +12,7 @@ import { ProductListItem } from "@/components/product/ProductListItem";
 import { SortSelect } from "@/components/category/SortSelect";
 import { ViewToggle, type ViewMode } from "@/components/category/ViewToggle";
 import { sortProducts, type SortKey } from "@/components/category/filters";
+import { useScrollListingOnPageChange } from "@/hooks/useScrollListingOnPageChange";
 
 const PAGE_SIZE = 12;
 
@@ -25,6 +26,7 @@ export function BrandPageClient({
   const [sort, setSort] = useState<SortKey>("popularity");
   const [view, setView] = useState<ViewMode>("grid");
   const [page, setPage] = useState(1);
+  const listRef = useScrollListingOnPageChange(page);
 
   const sorted = useMemo(() => sortProducts(products, sort), [products, sort]);
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
@@ -49,7 +51,10 @@ export function BrandPageClient({
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-y border-border py-3">
+        <div
+          ref={listRef}
+          className="mt-6 scroll-mt-28 flex flex-wrap items-center justify-between gap-3 border-y border-border py-3 sm:scroll-mt-32"
+        >
           <SortSelect value={sort} onChange={(value) => { setSort(value); setPage(1); }} />
           <ViewToggle value={view} onChange={setView} />
         </div>
