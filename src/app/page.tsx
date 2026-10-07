@@ -1,16 +1,8 @@
 import { StorefrontHeader } from "@/components/layout/StorefrontHeader";
 import { Footer } from "@/components/layout/Footer";
-import { Hero } from "@/components/home/Hero";
-import { BrandCarousel } from "@/components/home/BrandCarousel";
-import { CategoryShortcuts } from "@/components/home/CategoryShortcuts";
-import { PromoBanner } from "@/components/home/PromoBanner";
-import { ProductSection } from "@/components/product/ProductSection";
-import {
-  getHomepageFeaturedProducts,
-  getHomepageNewArrivals,
-} from "@/server/catalog";
-import { getStorefrontHeroSlides } from "@/server/catalog/hero";
-import { getHomepageBrandSlides, getHomepageCategoryCards } from "@/server/catalog/homepage";
+import { HomepageSections } from "@/components/home/HomepageSections";
+import { ensureHomepageInitialized } from "@/server/homepage/init";
+import { getHomepagePageData } from "@/server/homepage/storefront";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getAppOriginString } from "@/lib/appUrl";
 
@@ -18,14 +10,15 @@ import { getAppOriginString } from "@/lib/appUrl";
 export const revalidate = 60;
 
 export default async function Home() {
-  const [featuredProducts, newArrivals, heroSlides, brandSlides, categoryCards] = await Promise.all([
-    getHomepageFeaturedProducts(),
-    getHomepageNewArrivals(),
-    getStorefrontHeroSlides(),
-    getHomepageBrandSlides(),
-    getHomepageCategoryCards(),
-  ]);
   const origin = getAppOriginString();
+  let sections: Awaited<ReturnType<typeof getHomepagePageData>> = [];
+  try {
+    await ensureHomepageInitialized();
+    sections = await getHomepagePageData();
+  } catch {
+    // Pre-migration / temporary DB issues — render header/footer without sections.
+    sections = [];
+  }
 
   return (
     <>
@@ -43,27 +36,7 @@ export default async function Home() {
       <StorefrontHeader />
 
       <main className="flex-1">
-        <Hero slides={heroSlides} />
-        <BrandCarousel brands={brandSlides} />
-        <CategoryShortcuts categories={categoryCards} />
-
-        <ProductSection
-          eyebrow="შერჩეული ჩვენს მიერ"
-          title="რჩეული პროდუქტები"
-          description="ყველაზე მოთხოვნადი მოდელები საუკეთესო ფასად"
-          href="/category/deals"
-          products={featuredProducts}
-        />
-
-        <PromoBanner />
-
-        <ProductSection
-          eyebrow="ახალი კოლექცია"
-          title="ახალი შემოსული"
-          description="უახლესი მოდელები, რომლებიც ახლახან შემოვიდა მაღაზიაში"
-          href="/category/new"
-          products={newArrivals}
-        />
+        <HomepageSections sections={sections} />
       </main>
 
       <Footer />

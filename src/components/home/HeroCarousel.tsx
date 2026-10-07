@@ -72,16 +72,38 @@ export function HeroCarousel({ slides }: { slides: StorefrontHeroSlide[] }) {
         className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth sm:gap-4"
       >
         {slides.map((slide, index) => {
+          const hasOverlayCopy = Boolean(slide.title || slide.subtitle || slide.ctaText);
           const content = (
-            <div className="relative aspect-[28/9] w-full overflow-hidden rounded-[var(--radius-xl)] border border-border bg-surface-2 shadow-sm">
+            <div className="relative aspect-[9/13] w-full overflow-hidden rounded-[var(--radius-xl)] border border-border bg-surface-2 shadow-sm sm:aspect-[28/9]">
+              {slide.mobileImageUrl ? (
+                <Image
+                  src={slide.mobileImageUrl}
+                  alt=""
+                  fill
+                  priority={index === 0}
+                  sizes="100vw"
+                  className="object-contain object-center sm:hidden"
+                />
+              ) : null}
               <Image
                 src={slide.imageUrl}
                 alt=""
                 fill
                 priority={index === 0}
                 sizes="(max-width: 768px) 100vw, (max-width: 1280px) 90vw, 1200px"
-                className="object-contain object-center"
+                className={`object-contain object-center ${slide.mobileImageUrl ? "hidden sm:block" : ""}`}
               />
+              {hasOverlayCopy ? (
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-950/70 via-ink-950/10 to-transparent p-4 sm:p-6">
+                  {slide.title ? <p className="text-h3 font-bold text-white sm:text-h2">{slide.title}</p> : null}
+                  {slide.subtitle ? <p className="text-small mt-1 text-white/85 sm:text-body">{slide.subtitle}</p> : null}
+                  {slide.ctaText ? (
+                    <span className="text-btn mt-3 inline-flex items-center rounded-[var(--radius-sm)] bg-white px-4 py-2 text-ink-900">
+                      {slide.ctaText}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           );
 
@@ -94,7 +116,7 @@ export function HeroCarousel({ slides }: { slides: StorefrontHeroSlide[] }) {
               className="w-full shrink-0 snap-start"
             >
               {slide.href ? (
-                isExternalMerchHref(slide.href) ? (
+                isExternalMerchHref(slide.href) || slide.openInNewTab ? (
                   <a href={slide.href} target="_blank" rel="noopener noreferrer" className="block">
                     {content}
                   </a>

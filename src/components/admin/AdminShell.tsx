@@ -24,7 +24,7 @@ import type { AdminUser } from "@/server/auth/admin";
 
 const NAV: { href: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { href: "/admin", label: "მიმოხილვა", icon: LayoutDashboard, exact: true },
-  { href: "/admin/hero", label: "ჰერო ბანერები", icon: ImageIcon },
+  { href: "/admin/homepage", label: "მთავარი გვერდი", icon: ImageIcon },
   { href: "/admin/products", label: "პროდუქტები", icon: Package },
   { href: "/admin/categories", label: "კატეგორიები", icon: FolderTree },
   { href: "/admin/specifications", label: "სპეციფიკაციები", icon: ListChecks },

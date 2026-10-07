@@ -204,7 +204,13 @@ export const adminHeroSlideSaveSchema = z.object({
   id: z.string().trim().min(1).optional(),
   imageUrl: z.string().trim().min(1, "ატვირთეთ ან შეიყვანეთ სურათი").max(2000),
   objectKey: z.string().trim().max(500).optional().nullable(),
+  mobileImageUrl: z.string().trim().max(2000).optional().default(""),
+  mobileObjectKey: z.string().trim().max(500).optional().nullable(),
+  title: z.string().trim().max(200).optional().default(""),
+  subtitle: z.string().trim().max(300).optional().default(""),
+  ctaText: z.string().trim().max(80).optional().default(""),
   href: z.string().trim().max(2000).optional().default(""),
+  openInNewTab: z.boolean().optional().default(false),
   sortOrder: z.number().int().min(0).max(9999).default(0),
   isActive: z.boolean().default(true),
 });

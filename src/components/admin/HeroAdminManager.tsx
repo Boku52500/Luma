@@ -29,13 +29,20 @@ export function HeroAdminManager({
   const [editing, setEditing] = useState<AdminHeroSlideRow | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const mobileFileRef = useRef<HTMLInputElement>(null);
 
   function openNew() {
     setEditing({
       id: "",
       imageUrl: "",
       objectKey: null,
+      mobileImageUrl: "",
+      mobileObjectKey: null,
+      title: "",
+      subtitle: "",
+      ctaText: "",
       href: "",
+      openInNewTab: false,
       sortOrder: slides.length,
       isActive: true,
       updatedAt: new Date().toISOString(),
@@ -53,7 +60,13 @@ export function HeroAdminManager({
         id: editing.id || undefined,
         imageUrl: editing.imageUrl,
         objectKey: editing.objectKey,
+        mobileImageUrl: editing.mobileImageUrl,
+        mobileObjectKey: editing.mobileObjectKey,
+        title: editing.title,
+        subtitle: editing.subtitle,
+        ctaText: editing.ctaText,
         href: editing.href,
+        openInNewTab: editing.openInNewTab,
         sortOrder: Number(editing.sortOrder),
         isActive: editing.isActive,
       });
@@ -85,6 +98,27 @@ export function HeroAdminManager({
           : current,
       );
       setSuccess("სურათი ატვირთულია — შეინახეთ სლაიდი");
+    });
+  }
+
+  function uploadMobile() {
+    const file = mobileFileRef.current?.files?.[0];
+    if (!file || !editing) return;
+    setMessage(null);
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("file", file);
+      const result = await uploadAdminHeroImage(formData);
+      if (!result.ok) {
+        setMessage(result.message);
+        return;
+      }
+      setEditing((current) =>
+        current
+          ? { ...current, mobileImageUrl: result.data.url, mobileObjectKey: result.data.objectKey }
+          : current,
+      );
+      setSuccess("მობილური სურათი ატვირთულია — შეინახეთ სლაიდი");
     });
   }
 
@@ -164,6 +198,46 @@ export function HeroAdminManager({
                   className={adminInputErrorClass(false)}
                 />
               </FormField>
+              {storageConfigured ? (
+                <FormField id="hero-file-mobile" label="მობილურის სურათი (არასავალდებულო)" optional>
+                  <div className="flex flex-wrap gap-2">
+                    <input ref={mobileFileRef} id="hero-file-mobile" type="file" accept="image/jpeg,image/png,image/webp,image/avif" className={adminInputErrorClass(false)} />
+                    <Button type="button" variant="secondary" disabled={pending} onClick={uploadMobile}>
+                      ატვირთვა
+                    </Button>
+                  </div>
+                </FormField>
+              ) : null}
+              {editing.mobileImageUrl ? (
+                <div className="relative aspect-[9/13] w-32 overflow-hidden rounded-[var(--radius-sm)] border border-border bg-surface-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={editing.mobileImageUrl} alt="" className="size-full object-contain" />
+                </div>
+              ) : null}
+              <FormField id="hero-title" label="სათაური (არასავალდებულო)" optional>
+                <input
+                  id="hero-title"
+                  value={editing.title}
+                  onChange={(e) => setEditing((c) => (c ? { ...c, title: e.target.value } : c))}
+                  className={adminInputErrorClass(false)}
+                />
+              </FormField>
+              <FormField id="hero-subtitle" label="ქვესათაური (არასავალდებულო)" optional>
+                <input
+                  id="hero-subtitle"
+                  value={editing.subtitle}
+                  onChange={(e) => setEditing((c) => (c ? { ...c, subtitle: e.target.value } : c))}
+                  className={adminInputErrorClass(false)}
+                />
+              </FormField>
+              <FormField id="hero-cta" label="ღილაკის ტექსტი (არასავალდებულო)" optional>
+                <input
+                  id="hero-cta"
+                  value={editing.ctaText}
+                  onChange={(e) => setEditing((c) => (c ? { ...c, ctaText: e.target.value } : c))}
+                  className={adminInputErrorClass(false)}
+                />
+              </FormField>
               <FormField id="hero-href" label="გადამისამართება" optional>
                 <input
                   id="hero-href"
@@ -173,6 +247,14 @@ export function HeroAdminManager({
                   className={adminInputErrorClass(false)}
                 />
               </FormField>
+              <label className="flex min-h-11 items-center gap-2 text-small">
+                <input
+                  type="checkbox"
+                  checked={editing.openInNewTab}
+                  onChange={(e) => setEditing((c) => (c ? { ...c, openInNewTab: e.target.checked } : c))}
+                />
+                გაიხსნას ახალ ტაბში
+              </label>
               <FormField id="hero-sort" label="რიგი">
                 <input
                   id="hero-sort"

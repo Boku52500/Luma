@@ -1,24 +1,14 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/server/auth/admin";
-import { listAdminHeroSlides } from "@/server/admin/hero";
-import { isStorageConfigured } from "@/server/storage";
-import { HeroAdminManager } from "@/components/admin/HeroAdminManager";
+import { prisma } from "@/server/db";
+import { HOMEPAGE_SECTION_KEYS } from "@/lib/homepage/types";
 
-export const metadata: Metadata = { title: "ჰერო ბანერები" };
-
-export default async function AdminHeroPage() {
+/** Hero slides now live inside the homepage editor. Keep this path working as a redirect. */
+export default async function AdminHeroRedirectPage() {
   await requireAdmin("/admin/hero");
-  const [slides, storageConfigured] = await Promise.all([listAdminHeroSlides(), Promise.resolve(isStorageConfigured())]);
-
-  return (
-    <div className="flex flex-col gap-5">
-      <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-text">ჰერო ბანერები</h1>
-        <p className="text-small mt-1 text-text-muted">
-          მთავარი გვერდის სურათიანი ბანერები — ატვირთვა, რიგი, აქტიურობა და გადამისამართება.
-        </p>
-      </div>
-      <HeroAdminManager initialSlides={slides} storageConfigured={storageConfigured} />
-    </div>
-  );
+  const heroSection = await prisma.homepageSection.findUnique({
+    where: { key: HOMEPAGE_SECTION_KEYS.HERO },
+    select: { id: true },
+  });
+  redirect(heroSection ? `/admin/homepage/${heroSection.id}` : "/admin/homepage");
 }

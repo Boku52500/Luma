@@ -5,6 +5,7 @@ import { STOREFRONT_NAV_CACHE_TAG } from "@/server/catalog/nav";
 import {
   STOREFRONT_BRANDS_CACHE_TAG,
   STOREFRONT_HERO_CACHE_TAG,
+  STOREFRONT_HOMEPAGE_CACHE_TAG,
   STOREFRONT_HOMEPAGE_CATEGORIES_CACHE_TAG,
 } from "@/server/catalog/merchTags";
 
@@ -33,8 +34,18 @@ export function revalidateCatalogue(opts?: { productSlug?: string; categorySlug?
 
 export function revalidateHero() {
   updateTag(STOREFRONT_HERO_CACHE_TAG);
+  updateTag(STOREFRONT_HOMEPAGE_CACHE_TAG);
   revalidatePath("/");
   revalidatePath("/admin/hero");
+  revalidatePath("/admin/homepage");
+}
+
+/** Invalidate the homepage editor's storefront output after any section/banner/reel edit. */
+export function revalidateHomepage() {
+  updateTag(STOREFRONT_HOMEPAGE_CACHE_TAG);
+  updateTag(STOREFRONT_BRANDS_CACHE_TAG);
+  revalidatePath("/");
+  revalidatePath("/admin/homepage", "layout");
 }
 
 export function revalidateOrders() {

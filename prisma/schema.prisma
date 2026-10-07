@@ -23,8 +23,10 @@ model Brand {
   showOnHomepage    Boolean            @default(false)
   /// Sort key for the homepage brands slideshow only.
   homepageSortOrder Int                @default(0)
-  translations      BrandTranslation[]
-  products          Product[]
+  translations       BrandTranslation[]
+  products           Product[]
+  homepageBrandItems HomepageBrandItem[]
+  homepageBanners    HomepageBanner[]      @relation("HomepageBannerBrand")
 
   @@index([indexable])
   @@index([showOnHomepage, homepageSortOrder])
@@ -71,6 +73,8 @@ model Category {
   specifications    CategorySpecification[]
   translations      CategoryTranslation[]
   products          Product[]
+  homepageBanners   HomepageBanner[]        @relation("HomepageBannerCategory")
+  homepageTiles     HomepageVisualTile[]    @relation("HomepageVisualTileCategory")
 
   @@index([parentId])
   @@index([isActive, sortOrder])
@@ -107,20 +111,130 @@ model CategoryTranslation {
   @@index([name])
 }
 
-/// Homepage hero banner slides — image-only, admin-managed.
+/// Homepage hero banner slides — admin-managed (section type HERO).
 model HeroSlide {
-  id        String   @id @default(cuid())
-  imageUrl  String
+  id              String   @id @default(cuid())
+  imageUrl        String
   /// R2 object key when this slide is storage-managed.
-  objectKey String?  @unique
+  objectKey       String?  @unique
+  mobileImageUrl  String?
+  mobileObjectKey String?  @unique
+  title           String?
+  subtitle        String?
+  ctaText         String?
   /// Optional redirect. Empty/null = non-navigational banner.
-  href      String?
-  sortOrder Int      @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  href            String?
+  openInNewTab    Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([isActive, sortOrder])
+}
+
+/// Ordered homepage sections for the Homepage Editor.
+model HomepageSection {
+  id         String              @id @default(cuid())
+  /// Stable key used for idempotent init (e.g. "hero", "split-banners", "reel-1").
+  key        String              @unique
+  type       HomepageSectionType
+  position   Int
+  adminLabel String
+  /// Public-facing heading when applicable.
+  title      String?
+  enabled    Boolean             @default(true)
+  /// Type-specific settings (productSource, limits, view-all, etc.).
+  config     Json                @default("{}")
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  banners    HomepageBanner[]
+  brandItems HomepageBrandItem[]
+  products   HomepageProductItem[]
+  tiles      HomepageVisualTile[]
+
+  @@index([enabled, position])
+  @@index([position])
+}
+
+model HomepageBanner {
+  id              String          @id @default(cuid())
+  sectionId       String
+  /// "A" | "B" for split banners; null for feature banners.
+  slot            String?
+  imageUrl        String?
+  objectKey       String?         @unique
+  mobileImageUrl  String?
+  mobileObjectKey String?         @unique
+  alt             String?
+  title           String?
+  subtitle        String?
+  ctaText         String?
+  linkType        HomepageLinkType @default(NONE)
+  href            String?
+  categoryId      String?
+  productId       String?
+  brandId         String?
+  openInNewTab    Boolean         @default(false)
+  enabled         Boolean         @default(true)
+  sortOrder       Int             @default(0)
+  section         HomepageSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  category        Category?       @relation("HomepageBannerCategory", fields: [categoryId], references: [id], onDelete: SetNull)
+  product         Product?        @relation("HomepageBannerProduct", fields: [productId], references: [id], onDelete: SetNull)
+  brand           Brand?          @relation("HomepageBannerBrand", fields: [brandId], references: [id], onDelete: SetNull)
+
+  @@index([sectionId, sortOrder])
+  @@index([categoryId])
+  @@index([productId])
+  @@index([brandId])
+}
+
+model HomepageBrandItem {
+  id        String          @id @default(cuid())
+  sectionId String
+  brandId   String
+  sortOrder Int             @default(0)
+  section   HomepageSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  brand     Brand           @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, brandId])
+  @@index([sectionId, sortOrder])
+}
+
+model HomepageProductItem {
+  id        String          @id @default(cuid())
+  sectionId String
+  productId String
+  sortOrder Int             @default(0)
+  section   HomepageSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, productId])
+  @@index([sectionId, sortOrder])
+}
+
+model HomepageVisualTile {
+  id              String           @id @default(cuid())
+  sectionId       String
+  /// Layout slot: "largeA" | "wide" | "smallC" | "smallD" | "largeB"
+  slot            String
+  imageUrl        String?
+  objectKey       String?          @unique
+  mobileImageUrl  String?
+  mobileObjectKey String?          @unique
+  title           String?
+  subtitle        String?
+  linkType        HomepageLinkType @default(CATEGORY)
+  href            String?
+  categoryId      String?
+  enabled         Boolean          @default(true)
+  sortOrder       Int              @default(0)
+  section         HomepageSection  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  category        Category?        @relation("HomepageVisualTileCategory", fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@unique([sectionId, slot])
+  @@index([sectionId, sortOrder])
+  @@index([categoryId])
 }
 
 model Product {
@@ -175,6 +289,8 @@ model Product {
   variants          ProductVariant[]
   reviews           Review[]
   wishlistItems     WishlistItem[]
+  homepageProducts  HomepageProductItem[]
+  homepageBanners   HomepageBanner[]         @relation("HomepageBannerProduct")
 
   @@index([brandId])
   @@index([categoryId])
@@ -980,4 +1096,21 @@ enum ReviewStatus {
 enum CustomerRole {
   CUSTOMER
   ADMIN
+}
+
+enum HomepageSectionType {
+  HERO
+  SPLIT_BANNERS
+  BRAND_REEL
+  CATEGORY_PRODUCT_REEL
+  FEATURE_BANNER
+  VISUAL_CATEGORIES
+}
+
+enum HomepageLinkType {
+  NONE
+  CATEGORY
+  PRODUCT
+  BRAND
+  CUSTOM
 }

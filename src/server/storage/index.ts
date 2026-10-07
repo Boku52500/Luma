@@ -7,6 +7,7 @@ export {
   createHeroImageObjectKey,
   createBrandLogoObjectKey,
   createCategoryImageObjectKey,
+  createHomepageImageObjectKey,
   isManagedProductImageKey,
   isPendingProductImageKey,
   isManagedMerchImageKey,

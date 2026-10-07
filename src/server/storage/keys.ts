@@ -10,6 +10,7 @@ const PENDING_PRODUCT_OBJECT_KEY = new RegExp(`^products/pending/${UUID}\\.webp$
 const HERO_OBJECT_KEY = new RegExp(`^hero/${UUID}\\.webp$`, "i");
 const BRAND_OBJECT_KEY = new RegExp(`^brands/[a-zA-Z0-9_-]{1,64}/${UUID}\\.webp$`, "i");
 const CATEGORY_OBJECT_KEY = new RegExp(`^categories/[a-zA-Z0-9_-]{1,64}/${UUID}\\.webp$`, "i");
+const HOMEPAGE_OBJECT_KEY = new RegExp(`^homepage/${UUID}\\.webp$`, "i");
 
 export function createProductImageObjectKey(productId: string): string {
   if (!PRODUCT_ID.test(productId)) {
@@ -41,6 +42,10 @@ export function createCategoryImageObjectKey(categoryId: string): string {
   return `categories/${categoryId}/${randomUUID()}.webp`;
 }
 
+export function createHomepageImageObjectKey(): string {
+  return `homepage/${randomUUID()}.webp`;
+}
+
 export function isManagedProductImageKey(objectKey: string): boolean {
   return PRODUCT_OBJECT_KEY.test(objectKey);
 }
@@ -54,7 +59,8 @@ export function isManagedMerchImageKey(objectKey: string): boolean {
     PRODUCT_OBJECT_KEY.test(objectKey) ||
     HERO_OBJECT_KEY.test(objectKey) ||
     BRAND_OBJECT_KEY.test(objectKey) ||
-    CATEGORY_OBJECT_KEY.test(objectKey)
+    CATEGORY_OBJECT_KEY.test(objectKey) ||
+    HOMEPAGE_OBJECT_KEY.test(objectKey)
   );
 }
 

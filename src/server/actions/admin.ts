@@ -74,7 +74,7 @@ import {
 } from "@/server/storage";
 import { revalidatePath } from "next/cache";
 import { normalizeMerchHref } from "@/lib/merchHref";
-import { revalidateCatalogue, revalidateHero, revalidateOrders, revalidatePromotions } from "@/server/admin/revalidate";
+import { revalidateCatalogue, revalidateHero, revalidateHomepage, revalidateOrders, revalidatePromotions } from "@/server/admin/revalidate";
 import { organizeAdminCategoryTaxonomy } from "@/server/admin/categoryOrganize";
 
 function uniqueMessage(error: unknown): string | null {
@@ -1576,7 +1576,13 @@ export async function saveAdminHeroSlide(input: unknown): Promise<ActionResult<{
           data: {
             imageUrl: data.imageUrl.trim(),
             ...(data.objectKey !== undefined ? { objectKey: emptyToNull(data.objectKey ?? "") } : {}),
+            mobileImageUrl: emptyToNull(data.mobileImageUrl),
+            ...(data.mobileObjectKey !== undefined ? { mobileObjectKey: emptyToNull(data.mobileObjectKey ?? "") } : {}),
+            title: emptyToNull(data.title),
+            subtitle: emptyToNull(data.subtitle),
+            ctaText: emptyToNull(data.ctaText),
             href,
+            openInNewTab: data.openInNewTab,
             sortOrder: data.sortOrder,
             isActive: data.isActive,
           },
@@ -1585,12 +1591,19 @@ export async function saveAdminHeroSlide(input: unknown): Promise<ActionResult<{
           data: {
             imageUrl: data.imageUrl.trim(),
             objectKey: emptyToNull(data.objectKey ?? ""),
+            mobileImageUrl: emptyToNull(data.mobileImageUrl),
+            mobileObjectKey: emptyToNull(data.mobileObjectKey ?? ""),
+            title: emptyToNull(data.title),
+            subtitle: emptyToNull(data.subtitle),
+            ctaText: emptyToNull(data.ctaText),
             href,
+            openInNewTab: data.openInNewTab,
             sortOrder: data.sortOrder,
             isActive: data.isActive,
           },
         });
     revalidateHero();
+    revalidateHomepage();
     return { ok: true, data: { id: slide.id } };
   } catch (error) {
     logError("admin.save_hero_slide_failed", { error });
@@ -1606,19 +1619,21 @@ export async function deleteAdminHeroSlide(input: unknown): Promise<ActionResult
 
   const slide = await prisma.heroSlide.findUnique({
     where: { id: parsed.data.id },
-    select: { id: true, objectKey: true },
+    select: { id: true, objectKey: true, mobileObjectKey: true },
   });
   if (!slide) return { ok: false, message: "სლაიდი ვერ მოიძებნა" };
 
   await prisma.heroSlide.delete({ where: { id: slide.id } });
-  if (slide.objectKey) {
+  for (const key of [slide.objectKey, slide.mobileObjectKey]) {
+    if (!key) continue;
     try {
-      await deleteProductImageObject(slide.objectKey);
+      await deleteProductImageObject(key);
     } catch (error) {
       logError("admin.hero_image_delete_failed", { error });
     }
   }
   revalidateHero();
+  revalidateHomepage();
   return { ok: true };
 }
 
@@ -1634,6 +1649,7 @@ export async function reorderAdminHeroSlides(input: unknown): Promise<ActionResu
     ),
   );
   revalidateHero();
+  revalidateHomepage();
   return { ok: true };
 }
 
