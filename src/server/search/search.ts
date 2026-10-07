@@ -12,7 +12,7 @@ import {
 import { prisma } from "@/server/prisma";
 import { getBrands } from "@/server/catalog/brands";
 import { getCategories } from "@/server/catalog/categories";
-import { productListInclude } from "@/server/catalog/include";
+import { productListInclude, productSuggestionInclude } from "@/server/catalog/include";
 import { mapProductList } from "@/server/catalog/mappers";
 import { toStorefrontCategory, toStorefrontProduct } from "@/server/catalog/toStorefrontProduct";
 import type { CatalogProduct } from "@/server/catalog/types";
@@ -28,6 +28,8 @@ import {
 export type SearchProductsOptions = {
   take?: number;
   locale?: string;
+  /** Lighter Prisma include for autocomplete (primary image only). */
+  suggestion?: boolean;
 };
 
 function contains(needle: string) {
@@ -128,10 +130,11 @@ export async function searchProducts(
 
   const take = Math.min(Math.max(options.take ?? SEARCH_PAGE_LIMIT, 1), SEARCH_PAGE_LIMIT);
   const locale = resolveLocale(options.locale ?? DEFAULT_LOCALE);
+  const include = options.suggestion ? productSuggestionInclude : productListInclude;
 
   const rows = await prisma.product.findMany({
     where: productCandidateWhere(needles),
-    include: productListInclude,
+    include,
     take,
   });
 
@@ -182,7 +185,7 @@ export async function getSearchSuggestions(
   const brandLimit = Math.min(limits.brands ?? SEARCH_SUGGESTION_LIMITS.brands, 6);
 
   const [products, categories, brands] = await Promise.all([
-    searchProducts(q, { take: Math.max(24, productLimit * 4) }),
+    searchProducts(q, { take: Math.max(12, productLimit * 3), suggestion: true }),
     searchCategories(q),
     searchBrands(q),
   ]);

@@ -12,7 +12,7 @@ import { ProductListItem } from "@/components/product/ProductListItem";
 import { SortSelect } from "@/components/category/SortSelect";
 import { ViewToggle, type ViewMode } from "@/components/category/ViewToggle";
 import { sortProducts, type SortKey } from "@/components/category/filters";
-import { useScrollListingOnPageChange } from "@/hooks/useScrollListingOnPageChange";
+import { useScrollListingIntoView } from "@/hooks/useScrollListingOnPageChange";
 
 const PAGE_SIZE = 12;
 
@@ -26,7 +26,7 @@ export function BrandPageClient({
   const [sort, setSort] = useState<SortKey>("popularity");
   const [view, setView] = useState<ViewMode>("grid");
   const [page, setPage] = useState(1);
-  const listRef = useScrollListingOnPageChange(page);
+  const listRef = useScrollListingIntoView(page);
 
   const sorted = useMemo(() => sortProducts(products, sort), [products, sort]);
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));

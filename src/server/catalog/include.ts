@@ -34,6 +34,27 @@ export const productListInclude = {
   installmentTerms: { orderBy: { months: "desc" as const }, take: 1 },
 } satisfies Prisma.ProductInclude;
 
+/** Autocomplete-only include: primary image + purchasability, no highlights/installments. */
+export const productSuggestionInclude = {
+  translations: true,
+  brand: { include: brandInclude },
+  category: { include: { translations: true } },
+  images: {
+    orderBy: { sortOrder: "asc" as const },
+    take: 1,
+    include: { translations: true },
+  },
+  highlights: {
+    orderBy: { sortOrder: "asc" as const },
+    take: 0,
+    include: { translations: true },
+  },
+  variants: {
+    select: { isActive: true },
+  },
+  installmentTerms: { orderBy: { months: "desc" as const }, take: 0 },
+} satisfies Prisma.ProductInclude;
+
 export const productDetailInclude = {
   translations: true,
   brand: { include: brandInclude },

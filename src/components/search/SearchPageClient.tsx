@@ -11,7 +11,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductListItem } from "@/components/product/ProductListItem";
-import { useScrollListingOnPageChange } from "@/hooks/useScrollListingOnPageChange";
+import { useScrollListingIntoView } from "@/hooks/useScrollListingOnPageChange";
 import { FilterSidebar } from "@/components/category/FilterSidebar";
 import { FilterDrawer } from "@/components/category/FilterDrawer";
 import { FilterChips } from "@/components/category/FilterChips";
@@ -22,6 +22,7 @@ import {
   categoryLabelsFromProducts,
   countActiveFilters,
   emptyFilters,
+  filtersRevision,
   sortProducts,
   type CategoryFilterState,
   type SortKey,
@@ -114,7 +115,7 @@ export function SearchPageClient({
   const [view, setView] = useState<ViewMode>("grid");
   const [page, setPage] = useState(1);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const listRef = useScrollListingOnPageChange(page);
+  const listRef = useScrollListingIntoView(`${page}:${filtersRevision(filters)}`);
 
   const filtered = useMemo(() => applyFilters(products, filters), [products, filters]);
   const sorted = useMemo(() => sortProducts(filtered, sort), [filtered, sort]);

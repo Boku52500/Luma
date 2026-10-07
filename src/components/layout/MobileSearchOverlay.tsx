@@ -73,9 +73,10 @@ export function MobileSearchOverlay({ open, onClose }: { open: boolean; onClose:
           <input
             ref={inputRef}
             id="mobile-site-search"
-            type="search"
+            type="text"
             role="combobox"
             autoComplete="off"
+            spellCheck={false}
             aria-expanded={open}
             aria-controls={listboxId}
             aria-autocomplete="list"
@@ -84,14 +85,14 @@ export function MobileSearchOverlay({ open, onClose }: { open: boolean; onClose:
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="მოძებნე პროდუქტი, ბრენდი ან კატეგორია"
-            className="h-11 w-full rounded-[var(--radius-md)] border border-border-strong bg-surface-2 pl-10 pr-9 text-[0.9375rem] text-text placeholder:text-text-faint transition-colors focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-100"
+            className="h-11 w-full rounded-[var(--radius-md)] border border-border-strong bg-surface-2 pl-10 pr-9 text-[0.9375rem] text-text placeholder:text-text-faint transition-colors duration-150 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-100"
           />
           {query ? (
             <button
               type="button"
               aria-label="ძებნის გასუფთავება"
               onClick={clear}
-              className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-text-faint transition-colors hover:bg-black/[0.06] hover:text-text"
+              className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-text-faint transition-colors duration-150 hover:bg-black/[0.06] hover:text-text"
             >
               <X className="size-4" strokeWidth={2.25} />
             </button>

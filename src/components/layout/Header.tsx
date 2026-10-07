@@ -9,8 +9,7 @@ import { Logo } from "./Logo";
 import { SearchBar } from "./SearchBar";
 import { MobileSearchTrigger } from "./MobileSearchTrigger";
 import { MobileSearchOverlay } from "./MobileSearchOverlay";
-import { CategoryNav } from "./CategoryNav";
-import { MobileCategoryChips } from "./MobileCategoryChips";
+import { CategoryMegaMenu } from "./CategoryMegaMenu";
 import { MobileMenu } from "./MobileMenu";
 import { HeaderAccountMenu } from "./HeaderAccountMenu";
 import { HeaderCartArea } from "@/components/cart/HeaderCartArea";
@@ -35,7 +34,7 @@ function IconLink({
     <Link
       href={href}
       aria-label={label}
-      className="relative flex size-10 items-center justify-center rounded-[var(--radius-md)] text-ink-700 transition-colors hover:bg-black/[0.05] hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+      className="relative flex size-10 items-center justify-center rounded-[var(--radius-md)] text-ink-700 transition-colors duration-150 hover:bg-black/[0.05] hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
     >
       {children}
       {typeof count === "number" && count > 0 ? (
@@ -61,25 +60,31 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      <div className={cn("overflow-visible border-b border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80", HEADER_SEARCH_STACK_CLASS)}>
+      <div
+        className={cn(
+          "overflow-visible border-b border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80",
+          HEADER_SEARCH_STACK_CLASS,
+        )}
+      >
         <Container>
-          <div className="flex h-16 items-center gap-3 lg:h-[4.25rem] lg:gap-6">
+          <div className="flex h-16 min-w-0 items-center gap-2.5 lg:h-[4.25rem] lg:gap-4 xl:gap-5">
             <button
               type="button"
               aria-label="მენიუს გახსნა"
               onClick={() => setMobileOpen(true)}
-              className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-ink-800 hover:bg-black/[0.05] lg:hidden"
+              className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-ink-800 transition-colors duration-150 hover:bg-black/[0.05] lg:hidden"
             >
               <Menu className="size-5" strokeWidth={2} />
             </button>
 
             <Logo className="shrink-0" />
 
-            <div className="hidden flex-1 lg:block">
-              <SearchBar className="relative z-20 mx-auto max-w-xl" />
+            <div className="hidden min-w-0 flex-1 items-center gap-3 lg:flex">
+              <CategoryMegaMenu tree={categoryTree} variant="header" />
+              <SearchBar className="relative z-20 min-w-0 flex-1" />
             </div>
 
-            <div className="ml-auto flex items-center gap-0.5 lg:ml-0 lg:gap-1">
+            <div className="ml-auto flex shrink-0 items-center gap-0.5 lg:ml-0 lg:gap-1">
               <HeaderAccountMenu />
               <IconLink href="/account/wishlist" label="სურვილების სია" count={isClient ? wishlistCount : 0}>
                 <Heart className="size-[21px]" strokeWidth={1.75} />
@@ -93,9 +98,6 @@ export function Header({
           </div>
         </Container>
       </div>
-
-      <CategoryNav mainNav={mainNav} categoryTree={categoryTree} />
-      <MobileCategoryChips mainNav={mainNav} />
 
       <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} mainNav={mainNav} categoryTree={categoryTree} />
       <MobileSearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />

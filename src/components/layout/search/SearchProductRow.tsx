@@ -18,6 +18,7 @@ export function SearchProductRow({
   onSelect: () => void;
 }) {
   const discount = getDiscountPercent(product.price, product.previousPrice);
+  const primaryPhoto = product.images?.find((image) => image.src);
 
   return (
     <button
@@ -28,11 +29,18 @@ export function SearchProductRow({
       onMouseEnter={onHover}
       onClick={onSelect}
       className={cn(
-        "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors",
+        "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150",
         active && "bg-surface-2"
       )}
     >
-      <ProductImage visual={product.visual} tone={product.tone} className="size-11 shrink-0" />
+      <ProductImage
+        visual={product.visual}
+        tone={product.tone}
+        src={primaryPhoto?.src}
+        alt={primaryPhoto?.alt || product.name}
+        sizes="44px"
+        className="size-11 shrink-0"
+      />
 
       <span className="min-w-0 flex-1">
         <span className="block truncate text-label text-text-faint">{product.brand}</span>

@@ -45,9 +45,10 @@ export function SearchBar({ className }: { className?: string }) {
         />
         <input
           id="site-search"
-          type="search"
+          type="text"
           role="combobox"
           autoComplete="off"
+          spellCheck={false}
           aria-expanded={panelVisible}
           aria-controls={listboxId}
           aria-autocomplete="list"
@@ -61,14 +62,14 @@ export function SearchBar({ className }: { className?: string }) {
           onClick={() => setOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="მოძებნე პროდუქტი, ბრენდი ან კატეგორია"
-          className="h-11 w-full rounded-[var(--radius-md)] border border-border-strong bg-surface-2 pl-11 pr-24 text-[0.9375rem] text-text placeholder:text-text-faint transition-colors focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-100"
+          className="h-11 w-full rounded-[var(--radius-md)] border border-border-strong bg-surface-2 pl-11 pr-24 text-[0.9375rem] text-text placeholder:text-text-faint transition-colors duration-150 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-100"
         />
         {query ? (
           <button
             type="button"
             aria-label="ძებნის გასუფთავება"
             onClick={clear}
-            className="absolute right-[4.75rem] top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-text-faint transition-colors hover:bg-black/[0.05] hover:text-text"
+            className="absolute right-[4.75rem] top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-text-faint transition-colors duration-150 hover:bg-black/[0.05] hover:text-text"
           >
             <X className="size-4" strokeWidth={2.25} />
           </button>

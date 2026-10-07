@@ -105,9 +105,12 @@ function MegaPanel({
 export function CategoryMegaMenu({
   tree,
   onNavigate,
+  variant = "default",
 }: {
   tree: CategoryNavNode[];
   onNavigate?: () => void;
+  /** Compact trigger for the main header row next to search. */
+  variant?: "default" | "header";
 }) {
   const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(tree[0]?.id ?? null);
@@ -115,6 +118,7 @@ export function CategoryMegaMenu({
   const panelRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<number | null>(null);
   const labelId = useId();
+  const isHeader = variant === "header";
 
   const active = tree.find((node) => node.id === activeId) ?? tree[0] ?? null;
 
@@ -176,12 +180,15 @@ export function CategoryMegaMenu({
         aria-controls={labelId}
         onClick={() => (open ? setOpen(false) : handleOpen())}
         className={cn(
-          "inline-flex h-10 items-center gap-2 rounded-[var(--radius-md)] px-4 text-nav font-semibold transition-colors",
-          open ? "bg-brand-700 text-white" : "bg-brand-600 text-white hover:bg-brand-700",
+          "inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] font-semibold text-white transition-colors duration-150",
+          isHeader
+            ? "h-11 gap-1.5 px-3 text-[0.8125rem] xl:gap-2 xl:px-3.5 xl:text-nav"
+            : "h-10 px-4 text-nav",
+          open ? "bg-brand-700" : "bg-brand-600 hover:bg-brand-700",
         )}
       >
-        <LayoutGrid className="size-[18px]" strokeWidth={2} />
-        ყველა კატეგორია
+        <LayoutGrid className={cn(isHeader ? "size-4 xl:size-[18px]" : "size-[18px]")} strokeWidth={2} />
+        <span className={cn(isHeader && "whitespace-nowrap")}>ყველა კატეგორია</span>
       </button>
 
       {open ? (
@@ -189,7 +196,12 @@ export function CategoryMegaMenu({
           ref={panelRef}
           id={labelId}
           role="menu"
-          className="absolute left-0 top-[calc(100%+0.35rem)] z-[70] flex w-[min(68rem,calc(100vw-1.5rem))] overflow-hidden rounded-[var(--radius-xl)] border border-border bg-surface shadow-[0_12px_40px_rgba(15,17,23,0.12)]"
+          className={cn(
+            "absolute top-[calc(100%+0.35rem)] z-[70] flex overflow-hidden rounded-[var(--radius-xl)] border border-border bg-surface shadow-[0_12px_40px_rgba(15,17,23,0.12)]",
+            isHeader
+              ? "left-0 w-[min(68rem,calc(100vw-2rem))]"
+              : "left-0 w-[min(68rem,calc(100vw-1.5rem))]",
+          )}
           onMouseEnter={clearCloseTimer}
           onMouseLeave={scheduleClose}
         >

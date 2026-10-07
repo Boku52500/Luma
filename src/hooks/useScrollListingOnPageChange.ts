@@ -3,10 +3,10 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Scrolls the product listing anchor into view when pagination page changes.
- * Skips the initial mount so first paint / back-forward restore stay calm.
+ * Scrolls the product listing anchor into view when `trigger` changes
+ * (pagination page and/or filter revision). Skips the initial mount.
  */
-export function useScrollListingOnPageChange(page: number) {
+export function useScrollListingIntoView(trigger: string | number) {
   const listRef = useRef<HTMLDivElement>(null);
   const skipInitial = useRef(true);
 
@@ -22,7 +22,12 @@ export function useScrollListingOnPageChange(page: number) {
       node.scrollIntoView({ behavior: "smooth", block: "start" });
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [page]);
+  }, [trigger]);
 
   return listRef;
+}
+
+/** @deprecated Prefer useScrollListingIntoView — kept for any external imports. */
+export function useScrollListingOnPageChange(page: number) {
+  return useScrollListingIntoView(page);
 }

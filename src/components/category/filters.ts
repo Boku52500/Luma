@@ -36,6 +36,26 @@ export const sortOptions: { value: SortKey; label: string }[] = [
   { value: "price-desc", label: "ფასი: ძვირიდან იაფისკენ" },
 ];
 
+export type FacetKey = "categories" | "brands" | "storage" | "ram" | "availability" | "price";
+
+/** Apply every filter except one facet — used to derive dynamic facet options/counts. */
+export function filtersOmitting(filters: CategoryFilterState, facet: FacetKey): CategoryFilterState {
+  switch (facet) {
+    case "categories":
+      return { ...filters, categories: [] };
+    case "brands":
+      return { ...filters, brands: [] };
+    case "storage":
+      return { ...filters, storage: [] };
+    case "ram":
+      return { ...filters, ram: [] };
+    case "availability":
+      return { ...filters, availability: [] };
+    case "price":
+      return { ...filters, priceMin: null, priceMax: null };
+  }
+}
+
 export function getPriceBounds(products: Product[]): { min: number; max: number } {
   if (products.length === 0) return { min: 0, max: 0 };
   let min = Infinity;
@@ -83,7 +103,7 @@ export function getUniqueBrands(products: Product[]): { value: string; count: nu
 
 export function getUniqueSpecValues(
   products: Product[],
-  key: "storage" | "ram"
+  key: "storage" | "ram",
 ): { value: string; count: number }[] {
   const counts = new Map<string, number>();
   for (const p of products) {
@@ -94,6 +114,90 @@ export function getUniqueSpecValues(
   return [...counts.entries()]
     .map(([value, count]) => ({ value, count }))
     .sort((a, b) => parseLeadingNumber(a.value) - parseLeadingNumber(b.value));
+}
+
+export function getUniqueAvailability(products: Product[]): { value: ProductAvailability; count: number }[] {
+  const counts = new Map<ProductAvailability, number>();
+  for (const p of products) counts.set(p.availability, (counts.get(p.availability) ?? 0) + 1);
+  const order: ProductAvailability[] = ["in-stock", "low-stock", "out-of-stock"];
+  return order
+    .filter((value) => (counts.get(value) ?? 0) > 0)
+    .map((value) => ({ value, count: counts.get(value) ?? 0 }));
+}
+
+/**
+ * Facet options for one dimension, counted against the current selection with
+ * that facet cleared. Zero-count options are hidden unless already selected.
+ */
+export function getFacetCategories(
+  products: Product[],
+  filters: CategoryFilterState,
+): { value: string; label: string; count: number }[] {
+  const base = applyFilters(products, filtersOmitting(filters, "categories"));
+  const labels = categoryLabelsFromProducts(products);
+  const options = getUniqueCategories(base);
+  const byValue = new Map(options.map((row) => [row.value, row]));
+  for (const selected of filters.categories) {
+    if (!byValue.has(selected)) {
+      byValue.set(selected, { value: selected, label: labels[selected] ?? selected, count: 0 });
+    }
+  }
+  return [...byValue.values()]
+    .filter((row) => row.count > 0 || filters.categories.includes(row.value))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
+
+export function getFacetBrands(
+  products: Product[],
+  filters: CategoryFilterState,
+): { value: string; count: number }[] {
+  const base = applyFilters(products, filtersOmitting(filters, "brands"));
+  const options = getUniqueBrands(base);
+  const byValue = new Map(options.map((row) => [row.value, row]));
+  for (const selected of filters.brands) {
+    if (!byValue.has(selected)) byValue.set(selected, { value: selected, count: 0 });
+  }
+  return [...byValue.values()]
+    .filter((row) => row.count > 0 || filters.brands.includes(row.value))
+    .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+}
+
+export function getFacetSpecValues(
+  products: Product[],
+  filters: CategoryFilterState,
+  key: "storage" | "ram",
+): { value: string; count: number }[] {
+  const selected = key === "storage" ? filters.storage : filters.ram;
+  const base = applyFilters(products, filtersOmitting(filters, key));
+  const options = getUniqueSpecValues(base, key);
+  const byValue = new Map(options.map((row) => [row.value, row]));
+  for (const value of selected) {
+    if (!byValue.has(value)) byValue.set(value, { value, count: 0 });
+  }
+  return [...byValue.values()]
+    .filter((row) => row.count > 0 || selected.includes(row.value))
+    .sort((a, b) => parseLeadingNumber(a.value) - parseLeadingNumber(b.value));
+}
+
+export function getFacetAvailability(
+  products: Product[],
+  filters: CategoryFilterState,
+): { value: ProductAvailability; count: number }[] {
+  const base = applyFilters(products, filtersOmitting(filters, "availability"));
+  const options = getUniqueAvailability(base);
+  const byValue = new Map(options.map((row) => [row.value, row]));
+  for (const selected of filters.availability) {
+    if (!byValue.has(selected)) byValue.set(selected, { value: selected, count: 0 });
+  }
+  const order: ProductAvailability[] = ["in-stock", "low-stock", "out-of-stock"];
+  return order
+    .map((value) => byValue.get(value))
+    .filter((row): row is { value: ProductAvailability; count: number } => Boolean(row))
+    .filter((row) => row.count > 0 || filters.availability.includes(row.value));
+}
+
+export function getFacetPriceBounds(products: Product[], filters: CategoryFilterState): { min: number; max: number } {
+  return getPriceBounds(applyFilters(products, filtersOmitting(filters, "price")));
 }
 
 export function applyFilters(products: Product[], filters: CategoryFilterState): Product[] {
@@ -110,11 +214,7 @@ export function applyFilters(products: Product[], filters: CategoryFilterState):
 }
 
 function popularityScore(product: Product): number {
-  return (
-    Number(product.isNew) * 100 +
-    (product.badge ? 50 : 0) +
-    (product.previousPrice ? 10 : 0)
-  );
+  return Number(product.isNew) * 100 + (product.badge ? 50 : 0) + (product.previousPrice ? 10 : 0);
 }
 
 export function sortProducts(products: Product[], sort: SortKey): Product[] {
@@ -142,4 +242,17 @@ export function countActiveFilters(filters: CategoryFilterState): number {
     (filters.priceMin != null ? 1 : 0) +
     (filters.priceMax != null ? 1 : 0)
   );
+}
+
+/** Stable key for scroll-on-filter triggers. */
+export function filtersRevision(filters: CategoryFilterState): string {
+  return [
+    filters.categories.slice().sort().join(","),
+    filters.brands.slice().sort().join(","),
+    filters.storage.slice().sort().join(","),
+    filters.ram.slice().sort().join(","),
+    filters.availability.slice().sort().join(","),
+    filters.priceMin ?? "",
+    filters.priceMax ?? "",
+  ].join("|");
 }

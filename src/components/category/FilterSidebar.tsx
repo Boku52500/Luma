@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import type { Product, ProductAvailability } from "@/types/product";
+import { useMemo, useState, type ReactNode } from "react";
+import type { Product } from "@/types/product";
 import { cn } from "@/lib/utils";
 import { availabilityLabel } from "@/lib/productLabels";
 import {
   type CategoryFilterState,
-  getPriceBounds,
-  getUniqueBrands,
-  getUniqueCategories,
-  getUniqueSpecValues,
+  getFacetAvailability,
+  getFacetBrands,
+  getFacetCategories,
+  getFacetPriceBounds,
+  getFacetSpecValues,
 } from "./filters";
-
-const availabilityOptions: ProductAvailability[] = ["in-stock", "out-of-stock"];
 
 function toggleValue<T extends string>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -39,7 +38,7 @@ function FilterCheckbox({
   count?: number;
 }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-2 py-1.5 text-small text-text">
+    <label className="flex cursor-pointer items-center justify-between gap-2 py-1.5 text-small text-text transition-colors duration-150">
       <span className="flex items-center gap-2.5">
         <input
           type="checkbox"
@@ -55,10 +54,9 @@ function FilterCheckbox({
 }
 
 /**
- * Data-driven filter sidebar: every section (brand/storage/ram) is derived
- * from the product list passed in, and sections with no meaningful variety
- * simply don't render — so the exact same component works for any future
- * category without per-category configuration.
+ * Faceted filter sidebar: each section's options/counts are derived from the
+ * current selection with that facet cleared, so impossible zero-count options
+ * disappear while still-selected values remain visible for deselection.
  */
 export function FilterSidebar({
   products,
@@ -68,7 +66,7 @@ export function FilterSidebar({
   showHeading = true,
   className,
 }: {
-  /** Full, unfiltered category product list — used to derive available facets. */
+  /** Full catalogue product list for this page (before client filters). */
   products: Product[];
   filters: CategoryFilterState;
   onChange: (patch: Partial<CategoryFilterState>) => void;
@@ -77,11 +75,12 @@ export function FilterSidebar({
   showHeading?: boolean;
   className?: string;
 }) {
-  const categories = getUniqueCategories(products);
-  const brands = getUniqueBrands(products);
-  const storageOptions = getUniqueSpecValues(products, "storage");
-  const ramOptions = getUniqueSpecValues(products, "ram");
-  const priceBounds = getPriceBounds(products);
+  const categories = useMemo(() => getFacetCategories(products, filters), [products, filters]);
+  const brands = useMemo(() => getFacetBrands(products, filters), [products, filters]);
+  const storageOptions = useMemo(() => getFacetSpecValues(products, filters, "storage"), [products, filters]);
+  const ramOptions = useMemo(() => getFacetSpecValues(products, filters, "ram"), [products, filters]);
+  const availabilityOptions = useMemo(() => getFacetAvailability(products, filters), [products, filters]);
+  const priceBounds = useMemo(() => getFacetPriceBounds(products, filters), [products, filters]);
 
   const [priceMinInput, setPriceMinInput] = useState(filters.priceMin?.toString() ?? "");
   const [priceMaxInput, setPriceMaxInput] = useState(filters.priceMax?.toString() ?? "");
@@ -91,6 +90,13 @@ export function FilterSidebar({
     const max = priceMaxInput.trim() ? Number(priceMaxInput) : null;
     onChange({ priceMin: min, priceMax: max });
   };
+
+  const showCategories = categories.length > 1 || filters.categories.length > 0;
+  const showBrands = brands.length > 0;
+  const showStorage = storageOptions.length > 0;
+  const showRam = ramOptions.length > 0;
+  const showPrice = priceBounds.max > priceBounds.min || filters.priceMin != null || filters.priceMax != null;
+  const showAvailability = availabilityOptions.length > 0;
 
   return (
     <div className={cn("flex flex-col rounded-[var(--radius-lg)] border border-border bg-surface p-4 shadow-xs", className)}>
@@ -103,13 +109,13 @@ export function FilterSidebar({
             setPriceMaxInput("");
             onClear();
           }}
-          className="text-small font-medium text-brand-600 transition-colors hover:text-brand-700"
+          className="text-small font-medium text-brand-600 transition-colors duration-150 hover:text-brand-700"
         >
           გასუფთავება
         </button>
       </div>
 
-      {categories.length > 1 ? (
+      {showCategories ? (
         <FilterSection title="კატეგორია">
           {categories.map(({ value, label, count }) => (
             <FilterCheckbox
@@ -123,7 +129,7 @@ export function FilterSidebar({
         </FilterSection>
       ) : null}
 
-      {brands.length > 1 ? (
+      {showBrands ? (
         <FilterSection title="ბრენდი">
           {brands.map(({ value, count }) => (
             <FilterCheckbox
@@ -137,7 +143,7 @@ export function FilterSidebar({
         </FilterSection>
       ) : null}
 
-      {priceBounds.max > priceBounds.min ? (
+      {showPrice ? (
         <FilterSection title="ფასი">
           <div className="flex items-center gap-2">
             <input
@@ -168,7 +174,7 @@ export function FilterSidebar({
         </FilterSection>
       ) : null}
 
-      {storageOptions.length > 1 ? (
+      {showStorage ? (
         <FilterSection title="მეხსიერება">
           {storageOptions.map(({ value, count }) => (
             <FilterCheckbox
@@ -182,7 +188,7 @@ export function FilterSidebar({
         </FilterSection>
       ) : null}
 
-      {ramOptions.length > 1 ? (
+      {showRam ? (
         <FilterSection title="ოპერატიული მეხსიერება (RAM)">
           {ramOptions.map(({ value, count }) => (
             <FilterCheckbox
@@ -196,16 +202,19 @@ export function FilterSidebar({
         </FilterSection>
       ) : null}
 
-      <FilterSection title="ხელმისაწვდომობა">
-        {availabilityOptions.map((value) => (
-          <FilterCheckbox
-            key={value}
-            label={availabilityLabel[value]}
-            checked={filters.availability.includes(value)}
-            onChange={() => onChange({ availability: toggleValue(filters.availability, value) })}
-          />
-        ))}
-      </FilterSection>
+      {showAvailability ? (
+        <FilterSection title="ხელმისაწვდომობა">
+          {availabilityOptions.map(({ value, count }) => (
+            <FilterCheckbox
+              key={value}
+              label={availabilityLabel[value]}
+              count={count}
+              checked={filters.availability.includes(value)}
+              onChange={() => onChange({ availability: toggleValue(filters.availability, value) })}
+            />
+          ))}
+        </FilterSection>
+      ) : null}
     </div>
   );
 }

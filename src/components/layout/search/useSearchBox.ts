@@ -41,13 +41,14 @@ export function useSearchBox({ onNavigate }: { onNavigate?: () => void } = {}) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const debouncedQuery = useDebouncedValue(query, 100);
+  const debouncedQuery = useDebouncedValue(query, 250);
   const { recent, addRecent, removeRecent, clearRecent } = useRecentSearches();
 
   const [results, setResults] = useState<SearchSuggestions>(emptySearchSuggestions);
   const [resultsFor, setResultsFor] = useState("");
   const [errorFor, setErrorFor] = useState<string | null>(null);
   const requestIdRef = useRef(0);
+  const cacheRef = useRef(new Map<string, SearchSuggestions>());
 
   // Reset the highlighted option whenever the query text itself changes, using
   // the React-recommended "adjust state during render" pattern instead of an
@@ -68,6 +69,14 @@ export function useSearchBox({ onNavigate }: { onNavigate?: () => void } = {}) {
       return;
     }
 
+    const cached = cacheRef.current.get(debouncedTrimmed);
+    if (cached) {
+      setResults(cached);
+      setResultsFor(debouncedTrimmed);
+      setErrorFor(null);
+      return;
+    }
+
     const requestId = ++requestIdRef.current;
     const controller = new AbortController();
 
@@ -81,6 +90,11 @@ export function useSearchBox({ onNavigate }: { onNavigate?: () => void } = {}) {
         if (!response.ok || !isSearchSuggestions(payload)) {
           setErrorFor(debouncedTrimmed);
           return;
+        }
+        cacheRef.current.set(debouncedTrimmed, payload);
+        if (cacheRef.current.size > 40) {
+          const oldest = cacheRef.current.keys().next().value;
+          if (oldest) cacheRef.current.delete(oldest);
         }
         setResults(payload);
         setResultsFor(debouncedTrimmed);
