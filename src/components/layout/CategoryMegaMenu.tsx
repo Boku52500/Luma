@@ -180,15 +180,13 @@ export function CategoryMegaMenu({
         aria-controls={labelId}
         onClick={() => (open ? setOpen(false) : handleOpen())}
         className={cn(
-          "inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] font-semibold text-white transition-colors duration-150",
-          isHeader
-            ? "h-11 gap-1.5 px-3 text-[0.8125rem] xl:gap-2 xl:px-3.5 xl:text-nav"
-            : "h-10 px-4 text-nav",
+          "inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] text-nav font-semibold text-white transition-colors duration-150",
+          isHeader ? "h-11 px-4 xl:px-5" : "h-10 px-4",
           open ? "bg-brand-700" : "bg-brand-600 hover:bg-brand-700",
         )}
       >
-        <LayoutGrid className={cn(isHeader ? "size-4 xl:size-[18px]" : "size-[18px]")} strokeWidth={2} />
-        <span className={cn(isHeader && "whitespace-nowrap")}>ყველა კატეგორია</span>
+        <LayoutGrid className="size-[18px]" strokeWidth={2} />
+        <span className="whitespace-nowrap">ყველა კატეგორია</span>
       </button>
 
       {open ? (

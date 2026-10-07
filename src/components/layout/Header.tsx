@@ -67,7 +67,7 @@ export function Header({
         )}
       >
         <Container>
-          <div className="flex h-16 min-w-0 items-center gap-2.5 lg:h-[4.25rem] lg:gap-4 xl:gap-5">
+          <div className="flex h-16 min-w-0 items-center gap-3 lg:h-[4.25rem] lg:gap-5 xl:gap-7">
             <button
               type="button"
               aria-label="მენიუს გახსნა"
@@ -79,12 +79,12 @@ export function Header({
 
             <Logo className="shrink-0" />
 
-            <div className="hidden min-w-0 flex-1 items-center gap-3 lg:flex">
+            <div className="hidden min-w-0 flex-1 items-center gap-4 lg:flex xl:gap-5">
               <CategoryMegaMenu tree={categoryTree} variant="header" />
-              <SearchBar className="relative z-20 min-w-0 flex-1" />
+              <SearchBar className="relative z-20 w-full min-w-0 max-w-xl flex-1" />
             </div>
 
-            <div className="ml-auto flex shrink-0 items-center gap-0.5 lg:ml-0 lg:gap-1">
+            <div className="ml-auto flex shrink-0 items-center gap-1 lg:gap-1.5">
               <HeaderAccountMenu />
               <IconLink href="/account/wishlist" label="სურვილების სია" count={isClient ? wishlistCount : 0}>
                 <Heart className="size-[21px]" strokeWidth={1.75} />
