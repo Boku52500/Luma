@@ -32,7 +32,7 @@ export function WishlistPageClient({ initialProducts = [] }: { initialProducts?:
     <Container className="py-6 sm:py-8">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8">
         <div>
-          <p className="text-label font-semibold text-brand-600">სურვილები</p>
+          <p className="text-label font-semibold text-brand-800">სურვილები</p>
           <h1 className="text-h2 mt-1 text-text">რჩეულები</h1>
           <p className="text-body mt-2 text-text-muted">
             შენახული პროდუქტები — დაამატეთ კალათაში ან წაშალეთ სიიდან.
@@ -65,7 +65,7 @@ export function WishlistPageClient({ initialProducts = [] }: { initialProducts?:
 
       {products.length > 0 ? (
         <div className="mt-10 text-center">
-          <Link href="/" className="text-small font-semibold text-brand-600 hover:text-brand-700">
+          <Link href="/" className="text-small font-semibold text-brand-800 hover:text-brand-900">
             ← მთავარზე დაბრუნება
           </Link>
         </div>

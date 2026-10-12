@@ -14,7 +14,8 @@ export function escapeAttribute(value: string): string {
   return escapeHtml(value);
 }
 
-const BRAND = "#fc3c0e";
+const BRAND = "#ffb74a";
+const ON_BRAND = "#171717";
 const TEXT = "#111827";
 const MUTED = "#6b7280";
 const BORDER = "#e5e7eb";
@@ -31,7 +32,7 @@ export function emailLayout(input: {
   const title = escapeHtml(input.title);
   const cta = input.cta
     ? `<p style="margin:28px 0 8px;">
-        <a href="${escapeAttribute(input.cta.href)}" style="display:inline-block;background:${BRAND};color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;font-size:15px;">
+        <a href="${escapeAttribute(input.cta.href)}" style="display:inline-block;background:${BRAND};color:${ON_BRAND};text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;font-size:15px;">
           ${escapeHtml(input.cta.label)}
         </a>
       </p>`

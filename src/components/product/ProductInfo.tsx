@@ -20,7 +20,7 @@ export function ProductInfo({
       <div>
         <Link
           href={`/category/${product.category}`}
-          className="text-label text-brand-600 transition-colors hover:text-brand-700"
+          className="text-label text-brand-800 transition-colors hover:text-brand-900"
         >
           {product.brand}
         </Link>

@@ -91,7 +91,7 @@ export function SearchResultsPanel({
           <button
             type="button"
             onClick={clearRecent}
-            className="text-label font-medium text-brand-600 transition-colors hover:text-brand-700"
+            className="text-label font-medium text-brand-800 transition-colors hover:text-brand-900"
           >
             ყველას გასუფთავება
           </button>
@@ -236,7 +236,7 @@ export function SearchResultsPanel({
                 }}
                 onClick={() => selectItem(item)}
                 className={cn(
-                  "mt-1 flex w-full items-center justify-center gap-1.5 border-t border-border px-4 py-3 text-small font-semibold text-brand-600 transition-colors",
+                  "mt-1 flex w-full items-center justify-center gap-1.5 border-t border-border px-4 py-3 text-small font-semibold text-brand-800 transition-colors",
                   active && "bg-brand-50"
                 )}
               >

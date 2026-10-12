@@ -49,7 +49,7 @@ export function OrdersPageClient({ orders }: { orders: StorefrontOrder[] }) {
                     <OrderStatusBadge status={order.status} />
                     <PaymentStatusBadge status={customerFacingPaymentStatus(order.paymentStatus, order.refundInProgress)} />
                     <span className="tnum text-small font-semibold text-text">{formatPrice(order.total)}</span>
-                    <span className="text-small font-medium text-brand-600">დეტალების ნახვა</span>
+                    <span className="text-small font-medium text-brand-800">დეტალების ნახვა</span>
                   </div>
                 </Link>
               </li>

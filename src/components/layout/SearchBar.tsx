@@ -76,7 +76,7 @@ export function SearchBar({ className }: { className?: string }) {
         ) : null}
         <button
           type="submit"
-          className="absolute right-1.5 top-1.5 inline-flex h-8 items-center rounded-[var(--radius-sm)] bg-brand-600 px-4 text-[0.8125rem] font-semibold text-white transition-colors hover:bg-brand-700"
+          className="absolute right-1.5 top-1.5 inline-flex h-8 items-center rounded-[var(--radius-sm)] bg-brand-600 px-4 text-[0.8125rem] font-semibold text-on-brand transition-colors hover:bg-brand-700"
         >
           ძებნა
         </button>

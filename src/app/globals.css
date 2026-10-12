@@ -8,18 +8,20 @@
    ========================================================================== */
 
 :root {
-  /* ---- Brand (#fc3c0e primary) ------------------------------------ */
-  --color-brand-50: #fff3ef;
-  --color-brand-100: #ffe4db;
-  --color-brand-200: #ffc5b3;
-  --color-brand-300: #ff9a7a;
-  --color-brand-400: #ff6a42;
-  --color-brand-500: #ff4d24;
-  --color-brand-600: #fc3c0e;
-  --color-brand-700: #d32f0a;
-  --color-brand-800: #a8260a;
-  --color-brand-900: #7a1d0b;
-  --color-brand-950: #420e06;
+  /* ---- Brand (#ffb74a primary) ------------------------------------ */
+  --color-brand-50: #fff8eb;
+  --color-brand-100: #ffefd1;
+  --color-brand-200: #ffdca3;
+  --color-brand-300: #ffc870;
+  --color-brand-400: #ffbf55;
+  --color-brand-500: #ffba4f;
+  --color-brand-600: #ffb74a;
+  --color-brand-700: #e9a033;
+  --color-brand-800: #c4841f;
+  --color-brand-900: #9a6518;
+  --color-brand-950: #52340c;
+  /* Dark charcoal for labels/icons on brand amber surfaces */
+  --color-text-on-brand: #171717;
 
   /* ---- Ink (near-black, used for dark surfaces: header/footer) ----- */
   --color-ink-50: #f4f5f7;
@@ -102,6 +104,7 @@
   --color-brand-800: var(--color-brand-800);
   --color-brand-900: var(--color-brand-900);
   --color-brand-950: var(--color-brand-950);
+  --color-text-on-brand: var(--color-text-on-brand);
 
   --color-ink-50: var(--color-ink-50);
   --color-ink-100: var(--color-ink-100);
@@ -292,12 +295,12 @@ body {
   }
 }
 
-/* Primary brand actions always use white text, including hover/disabled. */
+/* Primary brand actions use dark charcoal on amber for accessible contrast. */
 @layer components {
   button.bg-brand-600,
   a.bg-brand-600,
   [role="button"].bg-brand-600 {
-    color: #fff;
+    color: var(--color-text-on-brand);
   }
   button.bg-brand-600:hover,
   a.bg-brand-600:hover,
@@ -305,11 +308,11 @@ body {
   a.bg-brand-700,
   button.bg-brand-800,
   a.bg-brand-800 {
-    color: #fff;
+    color: var(--color-text-on-brand);
   }
   button.bg-brand-600:disabled,
   a.bg-brand-600[aria-disabled="true"] {
-    color: #fff;
+    color: var(--color-text-on-brand);
   }
 }
 

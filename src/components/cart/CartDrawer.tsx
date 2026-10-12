@@ -77,7 +77,7 @@ export function CartDrawer() {
       >
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-4 sm:px-5">
           <div className="flex items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+            <span className="flex size-9 items-center justify-center rounded-full bg-brand-50 text-brand-800">
               <ShoppingBag className="size-[18px]" strokeWidth={2} />
             </span>
             <h2 className="text-h3 text-text">

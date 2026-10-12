@@ -53,7 +53,7 @@ export function LoginPageClient() {
       footer={
         <p className="text-small text-text-muted">
           არ გაქვთ ანგარიში?{" "}
-          <Link href="/register" className="font-semibold text-brand-600 hover:text-brand-700">
+          <Link href="/register" className="font-semibold text-brand-800 hover:text-brand-900">
             ახალი მომხმარებლის რეგისტრაცია
           </Link>
         </p>
@@ -97,7 +97,7 @@ export function LoginPageClient() {
         ) : null}
 
         <div className="flex justify-end">
-          <Link href="/forgot-password" className="text-small font-medium text-brand-600 hover:text-brand-700">
+          <Link href="/forgot-password" className="text-small font-medium text-brand-800 hover:text-brand-900">
             პაროლის აღდგენა
           </Link>
         </div>

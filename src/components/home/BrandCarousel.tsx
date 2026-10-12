@@ -23,7 +23,7 @@ export function BrandCarousel({ brands }: { brands: HomepageBrandSlide[] }) {
       <Container>
         <div className="mb-4 flex items-end justify-between gap-3">
           <div>
-            <p className="text-label font-semibold text-brand-600">ბრენდები</p>
+            <p className="text-label font-semibold text-brand-800">ბრენდები</p>
             <h2 className="text-h3 mt-0.5 text-text">ოფიციალური ბრენდები</h2>
           </div>
           {brands.length > 4 ? (
@@ -72,7 +72,7 @@ export function BrandCarousel({ brands }: { brands: HomepageBrandSlide[] }) {
                 <span className="text-small line-clamp-2 text-center font-semibold text-brand-700">{brand.name}</span>
               )}
               {brand.logoUrl ? (
-                <span className="text-label line-clamp-1 text-center text-text-muted group-hover:text-brand-700">
+                <span className="text-label line-clamp-1 text-center text-text-muted group-hover:text-brand-900">
                   {brand.name}
                 </span>
               ) : null}

@@ -83,7 +83,7 @@ export function AccountDashboard({
             </h2>
             <Link
               href={`/account/orders/${encodeURIComponent(recentOrder.id)}`}
-              className="text-small inline-flex items-center gap-1 font-medium text-brand-600 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+              className="text-small inline-flex items-center gap-1 font-medium text-brand-800 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
             >
               დეტალები
               <ChevronRight className="size-4" strokeWidth={2} />

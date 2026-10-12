@@ -51,7 +51,7 @@ export function DeliveryMethodSection({
             >
               <div className="flex items-start justify-between gap-2">
                 <span className="flex items-center gap-2 text-body font-semibold text-text">
-                  <Icon className="size-[18px] text-brand-600" strokeWidth={1.75} />
+                  <Icon className="size-[18px] text-brand-800" strokeWidth={1.75} />
                   {method.label}
                 </span>
                 <span

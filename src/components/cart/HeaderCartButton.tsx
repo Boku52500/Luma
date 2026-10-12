@@ -28,7 +28,7 @@ export function HeaderCartButton() {
       {count > 0 ? (
         <span
           aria-hidden
-          className="tnum absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-600 px-1 text-[0.625rem] font-bold leading-none text-white"
+          className="tnum absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-600 px-1 text-[0.625rem] font-bold leading-none text-on-brand"
         >
           {count > 99 ? "99+" : count}
         </span>

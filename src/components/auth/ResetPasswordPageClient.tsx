@@ -75,7 +75,7 @@ export function ResetPasswordPageClient() {
       title="ახალი პაროლი"
       footer={
         <p className="text-small text-text-muted">
-          <Link href="/login" className="font-semibold text-brand-600 hover:text-brand-700">
+          <Link href="/login" className="font-semibold text-brand-800 hover:text-brand-900">
             შესვლაზე დაბრუნება
           </Link>
         </p>

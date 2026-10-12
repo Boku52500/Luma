@@ -186,7 +186,7 @@ export default async function ProductPage({
             <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
               {whatsIncluded.map((item) => (
                 <li key={item} className="flex items-center gap-2.5 text-small text-text">
-                  <Package className="size-4 shrink-0 text-brand-600" strokeWidth={1.75} />
+                  <Package className="size-4 shrink-0 text-brand-800" strokeWidth={1.75} />
                   {item}
                 </li>
               ))}
@@ -198,14 +198,14 @@ export default async function ProductPage({
           <h2 className="text-h3 mb-5 text-text">გარანტია და მიწოდება</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex items-start gap-3 rounded-[var(--radius-md)] border border-border bg-surface p-5">
-              <ShieldCheck className="mt-0.5 size-5 shrink-0 text-brand-600" strokeWidth={1.75} />
+              <ShieldCheck className="mt-0.5 size-5 shrink-0 text-brand-800" strokeWidth={1.75} />
               <div>
                 <p className="text-body font-semibold text-text">გარანტია</p>
                 <p className="text-small mt-1 text-text-muted">{warranty}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 rounded-[var(--radius-md)] border border-border bg-surface p-5">
-              <Truck className="mt-0.5 size-5 shrink-0 text-brand-600" strokeWidth={1.75} />
+              <Truck className="mt-0.5 size-5 shrink-0 text-brand-800" strokeWidth={1.75} />
               <div>
                 <p className="text-body font-semibold text-text">მიწოდება</p>
                 <p className="text-small mt-1 text-text-muted">{delivery.estimate}</p>

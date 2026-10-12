@@ -110,7 +110,7 @@ export function HomepageEditorList({ initialSections }: { initialSections: Admin
       <p className="text-label text-text-faint">
         გამორთული სექცია ვიტრინაზე არ გამოჩნდება. ცარიელი (სურათების/პროდუქტების გარეშე) სექცია ავტომატურად გამოტოვებულია.
       </p>
-      <Link href="/" target="_blank" className="text-btn text-brand-600 hover:text-brand-700">
+      <Link href="/" target="_blank" className="text-btn text-brand-800 hover:text-brand-900">
         მთავარი გვერდის ნახვა →
       </Link>
     </div>

@@ -34,7 +34,7 @@ function MegaPanel({
     <div className="flex min-h-[20rem] flex-1 flex-col p-6">
       <div className="mb-5 flex items-center justify-between gap-3 border-b border-border pb-5">
         <div className="flex items-center gap-3.5">
-          <span className="flex size-11 items-center justify-center rounded-[var(--radius-md)] bg-brand-50 text-brand-600">
+          <span className="flex size-11 items-center justify-center rounded-[var(--radius-md)] bg-brand-50 text-brand-800">
             <CategoryIcon slug={active.slug} className="size-5" strokeWidth={1.75} />
           </span>
           <div>
@@ -42,7 +42,7 @@ function MegaPanel({
             <Link
               href={active.href}
               onClick={onNavigate}
-              className="text-small font-medium text-brand-600 transition-colors hover:text-brand-700"
+              className="text-small font-medium text-brand-800 transition-colors hover:text-brand-900"
             >
               ყველა {active.name} →
             </Link>
@@ -54,7 +54,7 @@ function MegaPanel({
         <Link
           href={active.href}
           onClick={onNavigate}
-          className="text-body inline-flex items-center gap-2 font-medium text-brand-600 transition-colors hover:text-brand-700"
+          className="text-body inline-flex items-center gap-2 font-medium text-brand-800 transition-colors hover:text-brand-900"
         >
           {active.name} — ყველა პროდუქტი
           <ChevronRight className="size-4" strokeWidth={2} />
@@ -69,7 +69,7 @@ function MegaPanel({
                     href={child.href}
                     prefetch={false}
                     onClick={onNavigate}
-                    className="flex items-center justify-between rounded-[var(--radius-sm)] px-2.5 py-2.5 text-small font-medium text-ink-800 transition-colors hover:bg-brand-50 hover:text-brand-700"
+                    className="flex items-center justify-between rounded-[var(--radius-sm)] px-2.5 py-2.5 text-small font-medium text-ink-800 transition-colors hover:bg-brand-50 hover:text-brand-900"
                   >
                     <span className="truncate">{child.name}</span>
                     {child.children.length > 0 ? (
@@ -84,7 +84,7 @@ function MegaPanel({
                             href={grand.href}
                             prefetch={false}
                             onClick={onNavigate}
-                            className="block truncate rounded-[var(--radius-sm)] px-2 py-1.5 text-[0.8125rem] text-text-muted transition-colors hover:bg-surface-2 hover:text-brand-600"
+                            className="block truncate rounded-[var(--radius-sm)] px-2 py-1.5 text-[0.8125rem] text-text-muted transition-colors hover:bg-surface-2 hover:text-brand-800"
                           >
                             {grand.name}
                           </Link>
@@ -180,7 +180,7 @@ export function CategoryMegaMenu({
         aria-controls={labelId}
         onClick={() => (open ? setOpen(false) : handleOpen())}
         className={cn(
-          "inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] text-nav font-semibold text-white transition-colors duration-150",
+          "inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] text-nav font-semibold text-on-brand transition-colors duration-150",
           isHeader ? "h-11 px-4 xl:px-5" : "h-10 px-4",
           open ? "bg-brand-700" : "bg-brand-600 hover:bg-brand-700",
         )}
@@ -219,8 +219,8 @@ export function CategoryMegaMenu({
                       className={cn(
                         "flex min-h-11 items-center gap-3 px-3 text-small transition-colors",
                         isActive
-                          ? "bg-brand-600 font-semibold text-white"
-                          : "text-ink-800 hover:bg-white hover:text-brand-600",
+                          ? "bg-brand-600 font-semibold text-on-brand"
+                          : "text-ink-800 hover:bg-white hover:text-brand-900",
                         node.highlight && !isActive && "text-danger-500",
                       )}
                     >

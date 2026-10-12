@@ -59,7 +59,7 @@ export function Footer() {
               <ul className="space-y-2.5">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className="text-small text-text-muted transition-colors hover:text-brand-600">
+                    <Link href={link.href} className="text-small text-text-muted transition-colors hover:text-brand-800">
                       {link.label}
                     </Link>
                   </li>
@@ -95,7 +95,7 @@ export function Footer() {
               {contacts.map(({ label, href, Icon }) => {
                 const content = (
                   <>
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-on-brand">
                       <Icon className="size-3.5" strokeWidth={2} />
                     </span>
                     {label}

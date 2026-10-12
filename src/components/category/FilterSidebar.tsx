@@ -109,7 +109,7 @@ export function FilterSidebar({
             setPriceMaxInput("");
             onClear();
           }}
-          className="text-small font-medium text-brand-600 transition-colors duration-150 hover:text-brand-700"
+          className="text-small font-medium text-brand-800 transition-colors duration-150 hover:text-brand-900"
         >
           გასუფთავება
         </button>

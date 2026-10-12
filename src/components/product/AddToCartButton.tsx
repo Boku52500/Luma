@@ -69,13 +69,16 @@ export function AddToCartButton({
       className={cn(
         "text-btn inline-flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:pointer-events-none",
         size === "lg" ? "h-12 text-[0.9375rem] sm:h-[3.25rem] sm:text-[1rem]" : "h-10",
-        disabled && (variant === "outline" ? "border border-border text-text-faint" : "bg-surface-2 text-text-faint"),
+        disabled &&
+          (variant === "outline"
+            ? "border border-border bg-surface-2 text-text-faint"
+            : "bg-bg-subtle text-text-faint"),
         !disabled && justAdded && "bg-success-500 text-white",
         !disabled &&
           !justAdded &&
           (variant === "outline"
-            ? "border border-ink-900 text-ink-900 hover:bg-ink-900 hover:text-white active:bg-ink-800"
-            : "bg-ink-900 text-white hover:bg-brand-600 active:bg-brand-700"),
+            ? "border border-brand-600 text-on-brand hover:bg-brand-50 active:bg-brand-100"
+            : "bg-brand-600 text-on-brand hover:bg-brand-700 active:bg-brand-800"),
         className
       )}
     >

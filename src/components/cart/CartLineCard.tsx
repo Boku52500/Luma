@@ -45,7 +45,7 @@ export function CartLineCard({
 
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex items-start justify-between gap-2">
-            <Link href={href} className="text-small line-clamp-2 font-semibold leading-snug text-text hover:text-brand-600">
+            <Link href={href} className="text-small line-clamp-2 font-semibold leading-snug text-text hover:text-brand-800">
               {snapshot.name}
             </Link>
             {showRemove ? (
@@ -93,7 +93,7 @@ export function CartLineCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <span className="text-label text-text-faint">{snapshot.brand}</span>
-            <Link href={href} className="text-body block font-semibold leading-snug text-text hover:text-brand-600">
+            <Link href={href} className="text-body block font-semibold leading-snug text-text hover:text-brand-800">
               {snapshot.name}
             </Link>
           </div>

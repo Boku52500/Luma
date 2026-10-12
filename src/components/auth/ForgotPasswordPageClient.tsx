@@ -54,7 +54,7 @@ export function ForgotPasswordPageClient() {
       footer={
         <p className="text-small text-text-muted">
           გაგახსენდათ პაროლი?{" "}
-          <Link href="/login" className="font-semibold text-brand-600 hover:text-brand-700">
+          <Link href="/login" className="font-semibold text-brand-800 hover:text-brand-900">
             შესვლა
           </Link>
         </p>

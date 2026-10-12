@@ -49,7 +49,7 @@ export default async function AdminDashboardPage() {
       <section className={adminCardClass}>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-base font-semibold text-text">ბოლო შეკვეთები</h2>
-          <Link href="/admin/orders" className="text-small font-medium text-brand-600 hover:text-brand-700">
+          <Link href="/admin/orders" className="text-small font-medium text-brand-800 hover:text-brand-900">
             ყველა
           </Link>
         </div>

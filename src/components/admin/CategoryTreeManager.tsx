@@ -78,7 +78,7 @@ function SortableRow({
         {row.archivedProductCount > 0 ? (
           <Link
             href={`/admin/products?category=${row.id}&active=archived`}
-            className="block text-text-faint hover:text-brand-700 hover:underline"
+            className="block text-text-faint hover:text-brand-900 hover:underline"
           >
             · {row.archivedProductCount} არქივში
           </Link>

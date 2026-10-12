@@ -90,7 +90,7 @@ export function PaymentMethodSection({
               )}
             >
               <div className="flex items-start justify-between gap-2">
-                <Icon className="size-5 text-brand-600" strokeWidth={1.75} />
+                <Icon className="size-5 text-brand-800" strokeWidth={1.75} />
                 <span
                   aria-hidden
                   className={cn(
@@ -116,7 +116,7 @@ export function PaymentMethodSection({
 
       {value === "card" ? (
         <div className="flex items-start gap-2.5 rounded-[var(--radius-md)] border border-border bg-surface-2 p-4">
-          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-brand-600" strokeWidth={1.75} />
+          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-brand-800" strokeWidth={1.75} />
           <p className="text-small text-text-muted">
             შეკვეთის დადასტურების შემდეგ გადახვალთ საქართველოს ბანკის უსაფრთხო გადახდის გვერდზე — ბარათის
             მონაცემები ამ საიტზე არ ინახება და არ გროვდება. Google Pay და Apple Pay, თუ ხელმისაწვდომია,
@@ -127,7 +127,7 @@ export function PaymentMethodSection({
 
       {value === "cash-on-delivery" ? (
         <div className="flex items-start gap-2.5 rounded-[var(--radius-md)] border border-border bg-surface-2 p-4">
-          <Banknote className="mt-0.5 size-4 shrink-0 text-brand-600" strokeWidth={1.75} />
+          <Banknote className="mt-0.5 size-4 shrink-0 text-brand-800" strokeWidth={1.75} />
           <p className="text-small text-text-muted">მზად გქონდეთ ზუსტი თანხა კურიერთან მიღებისას.</p>
         </div>
       ) : null}
@@ -149,7 +149,7 @@ export function PaymentMethodSection({
                   selected ? "border-brand-600 bg-brand-50" : "border-border-strong hover:border-ink-900",
                 )}
               >
-                <Icon className="size-5 text-brand-600" strokeWidth={1.75} />
+                <Icon className="size-5 text-brand-800" strokeWidth={1.75} />
                 <span className="text-small font-semibold text-text">{method.label}</span>
                 <span className="text-label text-text-muted">{method.description}</span>
               </button>

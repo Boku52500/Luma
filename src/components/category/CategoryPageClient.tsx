@@ -89,7 +89,7 @@ export function CategoryPageClient({ category, products }: { category: Category;
               <SlidersHorizontal className="size-4" strokeWidth={2.25} />
               ფილტრი
               {activeCount > 0 ? (
-                <span className="tnum ml-0.5 inline-flex size-5 items-center justify-center rounded-full bg-brand-600 text-[0.6875rem] font-semibold text-white">
+                <span className="tnum ml-0.5 inline-flex size-5 items-center justify-center rounded-full bg-brand-600 text-[0.6875rem] font-semibold text-on-brand">
                   {activeCount}
                 </span>
               ) : null}
@@ -135,7 +135,7 @@ export function CategoryPageClient({ category, products }: { category: Category;
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="text-small mt-1 font-semibold text-brand-600 hover:text-brand-700"
+                    className="text-small mt-1 font-semibold text-brand-800 hover:text-brand-900"
                   >
                     ფილტრების გასუფთავება
                   </button>
@@ -167,7 +167,7 @@ export function CategoryPageClient({ category, products }: { category: Category;
           <button
             type="button"
             onClick={() => setDrawerOpen(false)}
-            className="text-btn flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] bg-ink-900 text-white transition-colors hover:bg-brand-600"
+            className="text-btn flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] bg-ink-900 text-white transition-colors hover:bg-brand-600 hover:text-on-brand"
           >
             შედეგების ნახვა ({sorted.length})
           </button>

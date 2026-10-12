@@ -35,7 +35,7 @@ function Branch({
                 role="menuitem"
                 onClick={onNavigate}
                 className={cn(
-                  "flex min-h-10 min-w-0 flex-1 items-center px-3 text-small text-ink-800 hover:bg-black/[0.04] hover:text-brand-600",
+                  "flex min-h-10 min-w-0 flex-1 items-center px-3 text-small text-ink-800 hover:bg-black/[0.04] hover:text-brand-800",
                   node.highlight && "font-semibold text-danger-500",
                 )}
               >
@@ -137,7 +137,7 @@ export function AllCategoriesMenu({
             setOpen(true);
           }
         }}
-        className="text-nav flex items-center gap-2 py-3 text-ink-900 hover:text-brand-600"
+        className="text-nav flex items-center gap-2 py-3 text-ink-900 hover:text-brand-800"
       >
         <LayoutGrid className="size-[18px]" strokeWidth={2} />
         ყველა კატეგორია

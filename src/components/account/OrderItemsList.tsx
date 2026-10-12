@@ -22,7 +22,7 @@ export function OrderItemsList({ items }: { items: StorefrontOrderItem[] }) {
             <ProductImage visual={item.visual ?? "accessory"} tone={item.tone || 1} className="size-14 shrink-0 sm:size-16" />
             <div className="min-w-0 flex-1">
               {href ? (
-                <Link href={href} className="hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400">
+                <Link href={href} className="hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400">
                   {name}
                 </Link>
               ) : (

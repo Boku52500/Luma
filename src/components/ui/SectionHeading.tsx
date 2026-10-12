@@ -21,7 +21,7 @@ export function SectionHeading({
     <div className={cn("flex flex-wrap items-end justify-between gap-4", className)}>
       <div>
         {eyebrow ? (
-          <p className="text-label mb-2 text-brand-600">{eyebrow}</p>
+          <p className="text-label mb-2 text-brand-800">{eyebrow}</p>
         ) : null}
         <h2 className="text-h2 text-text">{title}</h2>
         {description ? (
@@ -31,7 +31,7 @@ export function SectionHeading({
       {href ? (
         <Link
           href={href}
-          className="text-btn group inline-flex shrink-0 items-center gap-1 text-brand-600 transition-colors hover:text-brand-700"
+          className="text-btn group inline-flex shrink-0 items-center gap-1 text-brand-800 transition-colors hover:text-brand-900"
         >
           {hrefLabel}
           <ArrowUpRight
