@@ -8,20 +8,20 @@
    ========================================================================== */
 
 :root {
-  /* ---- Brand (#ffb74a primary) ------------------------------------ */
-  --color-brand-50: #fff8eb;
-  --color-brand-100: #ffefd1;
-  --color-brand-200: #ffdca3;
-  --color-brand-300: #ffc870;
-  --color-brand-400: #ffbf55;
-  --color-brand-500: #ffba4f;
-  --color-brand-600: #ffb74a;
-  --color-brand-700: #e9a033;
-  --color-brand-800: #c4841f;
-  --color-brand-900: #9a6518;
-  --color-brand-950: #52340c;
-  /* Dark charcoal for labels/icons on brand amber surfaces */
-  --color-text-on-brand: #171717;
+  /* ---- Brand (#f1950b primary) ------------------------------------ */
+  --color-brand-50: #fff8ed;
+  --color-brand-100: #ffefd4;
+  --color-brand-200: #ffd9a8;
+  --color-brand-300: #ffbf6b;
+  --color-brand-400: #f9a83a;
+  --color-brand-500: #f59c1a;
+  --color-brand-600: #f1950b;
+  --color-brand-700: #d17f09;
+  --color-brand-800: #a86508;
+  --color-brand-900: #7a4c0c;
+  --color-brand-950: #412706;
+  /* White labels/icons on primary brand surfaces */
+  --color-text-on-brand: #ffffff;
 
   /* ---- Ink (near-black, used for dark surfaces: header/footer) ----- */
   --color-ink-50: #f4f5f7;
@@ -295,12 +295,12 @@ body {
   }
 }
 
-/* Primary brand actions use dark charcoal on amber for accessible contrast. */
+/* Primary brand actions always use white text/icons, including hover/disabled. */
 @layer components {
   button.bg-brand-600,
   a.bg-brand-600,
   [role="button"].bg-brand-600 {
-    color: var(--color-text-on-brand);
+    color: #fff;
   }
   button.bg-brand-600:hover,
   a.bg-brand-600:hover,
@@ -308,11 +308,20 @@ body {
   a.bg-brand-700,
   button.bg-brand-800,
   a.bg-brand-800 {
-    color: var(--color-text-on-brand);
+    color: #fff;
   }
   button.bg-brand-600:disabled,
   a.bg-brand-600[aria-disabled="true"] {
-    color: var(--color-text-on-brand);
+    color: #fff;
+  }
+  button.bg-brand-600 svg,
+  a.bg-brand-600 svg,
+  [role="button"].bg-brand-600 svg,
+  button.bg-brand-700 svg,
+  a.bg-brand-700 svg,
+  button.bg-brand-800 svg,
+  a.bg-brand-800 svg {
+    color: currentColor;
   }
 }
 

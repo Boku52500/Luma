@@ -95,7 +95,7 @@ export function Footer() {
               {contacts.map(({ label, href, Icon }) => {
                 const content = (
                   <>
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-on-brand">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white">
                       <Icon className="size-3.5" strokeWidth={2} />
                     </span>
                     {label}

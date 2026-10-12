@@ -14,8 +14,8 @@ export function escapeAttribute(value: string): string {
   return escapeHtml(value);
 }
 
-const BRAND = "#ffb74a";
-const ON_BRAND = "#171717";
+const BRAND = "#f1950b";
+const ON_BRAND = "#ffffff";
 const TEXT = "#111827";
 const MUTED = "#6b7280";
 const BORDER = "#e5e7eb";

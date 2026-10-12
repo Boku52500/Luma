@@ -170,7 +170,7 @@ export function SearchPageClient({
               <SlidersHorizontal className="size-4" strokeWidth={2.25} />
               ფილტრი
               {activeCount > 0 ? (
-                <span className="tnum ml-0.5 inline-flex size-5 items-center justify-center rounded-full bg-brand-600 text-[0.6875rem] font-semibold text-on-brand">
+                <span className="tnum ml-0.5 inline-flex size-5 items-center justify-center rounded-full bg-brand-600 text-[0.6875rem] font-semibold text-white">
                   {activeCount}
                 </span>
               ) : null}
@@ -248,7 +248,7 @@ export function SearchPageClient({
           <button
             type="button"
             onClick={() => setDrawerOpen(false)}
-            className="text-btn flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] bg-ink-900 text-white transition-colors hover:bg-brand-600 hover:text-on-brand"
+            className="text-btn flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] bg-ink-900 text-white transition-colors hover:bg-brand-600 hover:text-white"
           >
             შედეგების ნახვა ({sorted.length})
           </button>

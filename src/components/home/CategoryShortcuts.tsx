@@ -33,7 +33,7 @@ export function CategoryShortcuts({ categories }: { categories: HomepageCategory
                   />
                 </span>
               ) : (
-                <span className="flex size-12 items-center justify-center rounded-[var(--radius-md)] bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-600 group-hover:text-on-brand sm:size-14">
+                <span className="flex size-12 items-center justify-center rounded-[var(--radius-md)] bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-600 group-hover:text-white sm:size-14">
                   <CategoryIcon slug={category.slug} iconKey={category.iconKey} className="size-6 sm:size-7" />
                 </span>
               )}

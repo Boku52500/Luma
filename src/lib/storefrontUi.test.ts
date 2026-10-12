@@ -19,10 +19,10 @@ describe("storefront discount badges", () => {
 });
 
 describe("primary brand button contrast", () => {
-  it("keeps dark charcoal text on the amber primary brand background", () => {
-    const primary = "bg-brand-600 text-on-brand hover:bg-brand-700 active:bg-brand-800";
-    assert.equal(primary.includes("text-on-brand"), true);
-    assert.equal(primary.includes("text-white"), false);
+  it("keeps white text on the primary brand background", () => {
+    const primary = "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800";
+    assert.equal(primary.includes("text-white"), true);
+    assert.equal(primary.includes("text-on-brand"), false);
   });
 });
 

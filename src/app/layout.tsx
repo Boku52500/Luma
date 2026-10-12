@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     title: "Luma — ტექნოლოგიების მაღაზია საქართველოში",
     description:
       "Luma — ორიგინალი ტექნიკა და გაჯეტები ოფიციალური გარანტიით. სმარტფონები, ლეპტოპები, ტელევიზორები და აქსესუარები სწრაფი მიწოდებით მთელი საქართველოს მასშტაბით.",
-    images: [{ url: "/Logo.png", width: 1400, height: 480, alt: "Luma" }],
+    images: [{ url: "/Logo.png", width: 1372, height: 503, alt: "Luma" }],
   },
   twitter: {
     card: "summary",
@@ -38,11 +38,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon-96x96.png?v=amber", sizes: "96x96", type: "image/png" },
-      { url: "/favicon.ico?v=amber", sizes: "32x32", type: "image/x-icon" },
+      { url: "/favicon-96x96.png?v=f1950b", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.ico?v=f1950b", sizes: "32x32", type: "image/x-icon" },
     ],
-    shortcut: [{ url: "/favicon-96x96.png?v=amber", type: "image/png" }],
-    apple: [{ url: "/favicon-96x96.png?v=amber", sizes: "96x96", type: "image/png" }],
+    shortcut: [{ url: "/favicon-96x96.png?v=f1950b", type: "image/png" }],
+    apple: [{ url: "/favicon-96x96.png?v=f1950b", sizes: "96x96", type: "image/png" }],
   },
 };
 

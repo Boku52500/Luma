@@ -77,8 +77,8 @@ export function AddToCartButton({
         !disabled &&
           !justAdded &&
           (variant === "outline"
-            ? "border border-brand-600 text-on-brand hover:bg-brand-50 active:bg-brand-100"
-            : "bg-brand-600 text-on-brand hover:bg-brand-700 active:bg-brand-800"),
+            ? "border border-brand-600 text-brand-800 hover:bg-brand-50 active:bg-brand-100"
+            : "bg-brand-600 text-white hover:bg-brand-700 hover:text-white active:bg-brand-800 active:text-white"),
         className
       )}
     >

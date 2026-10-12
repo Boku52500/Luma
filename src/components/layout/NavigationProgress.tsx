@@ -67,7 +67,7 @@ function NavigationProgressBar() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[100] h-0.5">
       <div
-        className="h-full bg-brand-600 shadow-[0_0_8px_rgba(255,183,74,0.45)] transition-[width] duration-200 ease-out"
+        className="h-full bg-brand-600 shadow-[0_0_8px_rgba(241,149,11,0.45)] transition-[width] duration-200 ease-out"
         style={{ width: `${progress}%` }}
       />
     </div>
